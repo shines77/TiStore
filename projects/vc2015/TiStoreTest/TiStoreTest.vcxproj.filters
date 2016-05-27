@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="src\TiStore">
+      <UniqueIdentifier>{8fe730a2-113e-4029-90bb-276242f99607}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TiStore\fs">
+      <UniqueIdentifier>{0cc30956-5aa0-4d7a-940f-f8b2dbf3b8c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TiStore\basic">
+      <UniqueIdentifier>{177dc205-b481-4fad-9eb9-bddc40fc3cd4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp">
+      <Filter>src\TiStore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\TiStore\TiStore.h">
+      <Filter>src\TiStore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\TiFS.h">
+      <Filter>src\TiStore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\BlockDevice.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\FileSystem.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\Initor.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\MetaData.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\SuperBlock.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\basic\stdint.h">
+      <Filter>src\TiStore\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\basic\cstdint">
+      <Filter>src\TiStore\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\basic\ssize.h">
+      <Filter>src\TiStore\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\basic\cssize">
+      <Filter>src\TiStore\basic</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

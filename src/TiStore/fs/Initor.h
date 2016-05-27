@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TimaxStore/fs/MetaData.h"
+#include "TiStore/fs/MetaData.h"
 
 namespace timax {
 namespace fs {

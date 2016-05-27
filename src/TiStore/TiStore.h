@@ -2,10 +2,10 @@
 
 namespace timax {
 
-class TimaxStore {
+class TiStore {
 public:
-    TimaxStore() {}
-    ~TimaxStore() {}
+    TiStore() {}
+    ~TiStore() {}
 };
 
 } // namespace timax

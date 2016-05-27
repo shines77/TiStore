@@ -23,6 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TimaxStoreTest</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>TiStoreTest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -96,7 +97,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TimaxStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TiStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,7 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TimaxStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TiStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +127,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TimaxStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TiStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,7 +145,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TimaxStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TiStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,17 +155,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\TimaxStoreTest\TimaxStoreTest.cpp" />
+    <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp" />
+    <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\src\TimaxStore\fs\BlockDevice.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\fs\FileSystem.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\fs\Initor.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\fs\MetaData.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\fs\SuperBlock.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\std_ssize.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\TimaxFS.h" />
-    <ClInclude Include="..\..\..\src\TimaxStore\TimaxStore.h" />
+    <ClInclude Include="..\..\..\src\TiStore\basic\cstdint" />
+    <ClInclude Include="..\..\..\src\TiStore\basic\ssize.h" />
+    <ClInclude Include="..\..\..\src\TiStore\basic\stdint.h" />
+    <ClInclude Include="..\..\..\src\TiStore\basic\cssize" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\BlockDevice.h" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\FileSystem.h" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\Initor.h" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\MetaData.h" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\SuperBlock.h" />
+    <ClInclude Include="..\..\..\src\TiStore\TiFS.h" />
+    <ClInclude Include="..\..\..\src\TiStore\TiStore.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

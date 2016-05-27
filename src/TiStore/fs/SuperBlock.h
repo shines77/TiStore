@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #ifndef MAKE_VERSION
 #define MAKE_VERSION(major, minor)  (((major) << 16) | (minor))
 #endif

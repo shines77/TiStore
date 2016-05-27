@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TimaxStore/fs/SuperBlock.h"
+#include "TiStore/fs/SuperBlock.h"
 
 namespace timax {
 namespace fs {

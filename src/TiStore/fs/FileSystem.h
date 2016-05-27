@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
-#include "TimaxStore/std_ssize.h"
+#include "TiStore/basic/cstdint"
+#include "TiStore/fs/MetaData.h"
 
 #if defined(_WIN32) || defined(WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -17,8 +17,6 @@
 #define MAX_PATH    PATH_MAX
 #endif // PATH_MAX
 #endif // MAX_PATH
-
-#include "TimaxStore/fs/MetaData.h"
 
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
 #define std_strcpy  strcpy_s
@@ -43,6 +41,22 @@ enum fs_mask_t {
     FSM_MAX         = 0xFFFFFFFFUL
 };
 
+enum fs_stat_t {
+    FST_NONE    = 0,
+    FST_OPEN    = 1,
+    FST_MAX     = 0xFFFFFFFF
+};
+
+#ifndef FS_REMOVE_MASK
+#define FS_REMOVE_MASK(val, mask, return_type, mask_type) \
+        ((return_type)((val) & (~(mask_type)(mask))))
+#endif
+
+#ifndef FS_ADD_MASK
+#define FS_ADD_MASK(val, mask, return_type, mask_type) \
+        ((return_type)((val) | ((mask_type)(mask))))
+#endif
+
 #if defined(_WIN32) || defined(WIN32)
 typedef HANDLE      native_fd;
 #define NULL_FD     NULL
@@ -65,7 +79,7 @@ private:
     char fragment_[MAX_PATH];
 
 public:
-    File() : fd_(NULL_FD), id_(-1), flag_(0), mode_(FSM_DEFAULT),
+    File() : fd_(NULL_FD), id_(-1), flag_(FST_NONE), mode_(FSM_DEFAULT),
         offset_(0), size_(0), capacity_(0), fragment_size_(0) {
         std_strcpy(filename_, "");
         std_strcpy(fragment_, "");
@@ -79,11 +93,16 @@ public:
         close();
     }
 
+    bool is_open() {
+        return ((flag_ | FST_OPEN) != 0);
+    }
+
     bool open(const char * filename, int mode = FSM_DEFAULT) {
         return true;
     }
 
     bool close() {
+        flag_ = FS_REMOVE_MASK(flag_, FST_OPEN, uint32_t, uint32_t);
         return true;
     }
 
@@ -97,11 +116,4 @@ struct Directory {
 };
 
 } // namespace fs
-} // namespace timax
-
-namespace timax {
-
-namespace fs { }
-namespace filesystem = fs;
-
 } // namespace timax
