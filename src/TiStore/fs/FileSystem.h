@@ -1,50 +1,30 @@
 #pragma once
 
 #include "TiStore/basic/cstdint"
+#include "TiStore/fs/Common.h"
 #include "TiStore/fs/MetaData.h"
-
-#if defined(_WIN32) || defined(WIN32)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#endif
-
-#ifndef MAX_PATH
-#ifndef PATH_MAX
-#define MAX_PATH    260
-#else
-#define MAX_PATH    PATH_MAX
-#endif // PATH_MAX
-#endif // MAX_PATH
-
-#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
-#define std_strcpy  strcpy_s
-#else
-#define std_strcpy  strcpy
-#endif
 
 namespace timax {
 namespace fs {
 
 enum fs_mask_t {
-    FSM_NONE        = 0,
-    FSM_READ        = 1,
-    FSM_WRITE       = 2,
-    FSM_APPEND      = 4,
-    FSM_APPENDTOEND = 8,
-    FSM_TRUNC       = 16,
-    FSM_BINARY      = 0x00008000UL,
-    FSM_DIRECTORY   = 0x40000000UL,
-    FSM_READ_WRITE  = FSM_READ | FSM_WRITE,
-    FSM_DEFAULT     = FSM_READ | FSM_WRITE | FSM_APPEND | FSM_BINARY,
-    FSM_MAX         = 0xFFFFFFFFUL
+    FS_MARK_NONE        = 0,
+    FS_MARK_READ        = 1,
+    FS_MARK_WRITE       = 2,
+    FS_MARK_APPEND      = 4,
+    FS_MARK_APPENDTOEND = 8,
+    FS_MARK_TRUNC       = 16,
+    FS_MARK_BINARY      = 0x00008000UL,
+    FS_MARK_DIRECTORY   = 0x40000000UL,
+    FS_MARK_READ_WRITE  = FS_MARK_READ | FS_MARK_WRITE,
+    FS_MARK_DEFAULT     = FS_MARK_READ | FS_MARK_WRITE | FS_MARK_APPEND | FS_MARK_BINARY,
+    FS_MARK_MAX         = 0xFFFFFFFFUL
 };
 
 enum fs_stat_t {
-    FST_NONE    = 0,
-    FST_OPEN    = 1,
-    FST_MAX     = 0xFFFFFFFF
+    FS_STAT_NONE    = 0,
+    FS_STAT_OPEN    = 1,
+    FS_STAT_MAX     = 0xFFFFFFFF
 };
 
 #ifndef FS_REMOVE_MASK
@@ -55,14 +35,6 @@ enum fs_stat_t {
 #ifndef FS_ADD_MASK
 #define FS_ADD_MASK(val, mask, return_type, mask_type) \
         ((return_type)((val) | ((mask_type)(mask))))
-#endif
-
-#if defined(_WIN32) || defined(WIN32)
-typedef HANDLE      native_fd;
-#define NULL_FD     NULL
-#else
-typedef int         native_fd;
-#define NULL_FD     0
 #endif
 
 class File {
@@ -79,14 +51,15 @@ private:
     char fragment_[MAX_PATH];
 
 public:
-    File() : fd_(NULL_FD), id_(-1), flag_(FST_NONE), mode_(FSM_DEFAULT),
+    File() : fd_(NULL_FD), id_(-1), flag_(FS_STAT_NONE), mode_(FS_MARK_DEFAULT),
         offset_(0), size_(0), capacity_(0), fragment_size_(0) {
         std_strcpy(filename_, "");
         std_strcpy(fragment_, "");
     }
 
-    File(const char * filename) : File() {
+    File(const char * filename, int mode = FS_MARK_DEFAULT) : File() {
         std_strcpy(filename_, filename);
+        open(filename, mode);
     }
 
     virtual ~File() {
@@ -94,20 +67,27 @@ public:
     }
 
     bool is_open() {
-        return ((flag_ | FST_OPEN) != 0);
+        return ((flag_ | FS_STAT_OPEN) != 0);
     }
 
-    bool open(const char * filename, int mode = FSM_DEFAULT) {
+    bool open(const char * filename, int mode = FS_MARK_DEFAULT) {
+        int err_code;
+        if (fd_ == null_fd)
+            fd_ = MetaData::get().open_file(filename, err_code);
         return true;
     }
 
     bool close() {
-        flag_ = FS_REMOVE_MASK(flag_, FST_OPEN, uint32_t, uint32_t);
+        flag_ = FS_REMOVE_MASK(flag_, FS_STAT_OPEN, uint32_t, uint32_t);
         return true;
     }
 
-    bool isDirectory() const {
-        return ((flag_ & FSM_DIRECTORY) != 0);
+    bool is_file() const {
+        return ((flag_ & FS_MARK_DIRECTORY) == 0);
+    }
+
+    bool is_directory() const {
+        return ((flag_ & FS_MARK_DIRECTORY) != 0);
     }
 };
 

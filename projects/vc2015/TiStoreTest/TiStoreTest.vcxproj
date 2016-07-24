@@ -164,6 +164,8 @@
     <ClInclude Include="..\..\..\src\TiStore\basic\stdint.h" />
     <ClInclude Include="..\..\..\src\TiStore\basic\cssize" />
     <ClInclude Include="..\..\..\src\TiStore\fs\BlockDevice.h" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\Common.h" />
+    <ClInclude Include="..\..\..\src\TiStore\fs\ErrorCode.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\FileSystem.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\Initor.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\MetaData.h" />

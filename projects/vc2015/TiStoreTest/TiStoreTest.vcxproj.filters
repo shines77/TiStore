@@ -61,5 +61,11 @@
     <ClInclude Include="..\..\..\src\TiStore\basic\cssize">
       <Filter>src\TiStore\basic</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\Common.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\fs\ErrorCode.h">
+      <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
