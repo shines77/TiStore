@@ -3,6 +3,7 @@
 #include "TiStore/fs/Common.h"
 #include "TiStore/fs/SuperBlock.h"
 #include "TiStore/fs/ErrorCode.h"
+#include "TiStore/fs/FileSystem.h"
 
 #include <string.h>
 #include <assert.h>
@@ -57,7 +58,7 @@ struct Inode {
     }
 };
 
-typedef std::map<std::string, Inode>    InodeMap;
+typedef std::map<std::string, Inode &>  InodeMap;
 typedef InodeMap::iterator              inodemap_iterator;
 typedef InodeMap::const_iterator        const_inodemap_iterator;
 
@@ -67,6 +68,8 @@ private:
     SuperBlock super_block_;
 
     InodeMap inodes_;
+
+    friend class File;
 
 public:
     MetaData() : inited_(false) { init(); }
@@ -113,21 +116,30 @@ public:
         return true;
     }
 
-    native_fd open_file(const char * filename, int & err_code) {
-        Inode inode;
+    Inode * open_file(File * file, const char * filename, int & err_code) {
+        assert(file != nullptr);
+        Inode * fd;
         const_inodemap_iterator inode_iter = inodes_.find(filename);
         if (inode_iter != inodes_.end()) {
             // file or directory is exists.
-            inode = inode_iter->second;
+            Inode * fd = &inode_iter->second;
+            err_code = error_code::no_error;
         }
         else {
             // file or directory is not exists.
-            inode.init();
-            inode.set_name(filename, std::strlen(filename));
-            inodes_.insert(std::make_pair(filename, inode));
+            Inode * inode = new Inode();
+            fd = inode;
+            if (inode != nullptr) {
+                inode->init();
+                inode->set_name(filename, std::strlen(filename));
+                inodes_.insert(std::make_pair(filename, *inode));
+                err_code = error_code::no_error;
+            }
+            else {
+                err_code = error_code::out_of_memory;
+            }
         }
-        err_code = error_code::no_error;
-        return null_fd;
+        return fd;
     }
 };
 

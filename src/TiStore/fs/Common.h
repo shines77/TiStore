@@ -7,6 +7,11 @@
 #include <windows.h>
 #endif
 
+#ifndef MAKE_VERSION
+#define MAKE_VERSION(major, minor)  (((major) << 16) | (minor))
+#endif
+#define TISTORE_VERSION     MAKE_VERSION(0, 1)
+
 #ifndef MAX_PATH
 #ifndef PATH_MAX
 #define MAX_PATH    260

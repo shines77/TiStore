@@ -1,11 +1,8 @@
 #pragma once
 
-#include <cstddef>
+#include "TiStore/fs/Common.h"
 
-#ifndef MAKE_VERSION
-#define MAKE_VERSION(major, minor)  (((major) << 16) | (minor))
-#endif
-#define TISTORE_VERSION     MAKE_VERSION(0, 1)
+#include <cstddef>
 
 namespace timax {
 namespace fs {

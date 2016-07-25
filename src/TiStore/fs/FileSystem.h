@@ -22,7 +22,7 @@ enum fs_mask_t {
 };
 
 enum fs_stat_t {
-    FS_STAT_NONE    = 0,
+    FS_STAT_UNKNOWN    = 0,
     FS_STAT_OPEN    = 1,
     FS_STAT_MAX     = 0xFFFFFFFF
 };
@@ -37,10 +37,14 @@ enum fs_stat_t {
         ((return_type)((val) | ((mask_type)(mask))))
 #endif
 
+typedef Inode * tsfs_fd;
+
 class File {
 private:
-    native_fd fd_;
+    native_fd native_fd_;
+    tsfs_fd fd_;
     int id_;
+    bool create_new_;
     uint32_t flag_;
     uint32_t mode_;
     size_t offset_;
@@ -51,7 +55,8 @@ private:
     char fragment_[MAX_PATH];
 
 public:
-    File() : fd_(NULL_FD), id_(-1), flag_(FS_STAT_NONE), mode_(FS_MARK_DEFAULT),
+    File() : fd_(nullptr), native_fd_(null_fd), id_(-1), create_new_(true),
+        flag_(FS_STAT_UNKNOWN), mode_(FS_MARK_DEFAULT),
         offset_(0), size_(0), capacity_(0), fragment_size_(0) {
         std_strcpy(filename_, "");
         std_strcpy(fragment_, "");
@@ -73,7 +78,7 @@ public:
     bool open(const char * filename, int mode = FS_MARK_DEFAULT) {
         int err_code;
         if (fd_ == null_fd)
-            fd_ = MetaData::get().open_file(filename, err_code);
+            fd_ = MetaData::get().open_file(this, filename, err_code);
         return true;
     }
 
