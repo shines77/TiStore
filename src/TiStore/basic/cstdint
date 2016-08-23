@@ -5,4 +5,4 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "TiStore/basic/cssize"
+#include "TiStore/basic/cstdssize"

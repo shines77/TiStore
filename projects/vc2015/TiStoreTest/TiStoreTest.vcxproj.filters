@@ -18,6 +18,9 @@
     <Filter Include="src\TiStore\basic">
       <UniqueIdentifier>{177dc205-b481-4fad-9eb9-bddc40fc3cd4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TiStore\kv">
+      <UniqueIdentifier>{58cd0c19-81ba-4b25-8a2d-d7c785ed9c95}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp">
@@ -58,14 +61,26 @@
     <ClInclude Include="..\..\..\src\TiStore\basic\ssize.h">
       <Filter>src\TiStore\basic</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\TiStore\basic\cssize">
-      <Filter>src\TiStore\basic</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\TiStore\fs\Common.h">
       <Filter>src\TiStore\fs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\TiStore\fs\ErrorCode.h">
       <Filter>src\TiStore\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilter.h">
+      <Filter>src\TiStore\kv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\kv\Hash.h">
+      <Filter>src\TiStore\kv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\kv\Slice.h">
+      <Filter>src\TiStore\kv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStoreTest\stop_watch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\basic\cstdssize">
+      <Filter>src\TiStore\basic</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

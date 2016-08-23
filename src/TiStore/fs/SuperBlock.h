@@ -4,7 +4,7 @@
 
 #include <cstddef>
 
-namespace timax {
+namespace TiStore {
 namespace fs {
 
 class SuperBlock {
@@ -59,6 +59,6 @@ public:
 };
 
 } // namespace fs
-} // namespace timax
+} // namespace TiStore
 
 #undef MAKE_VERSION

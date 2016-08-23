@@ -4,7 +4,7 @@
 #include "TiStore/fs/Common.h"
 #include "TiStore/fs/MetaData.h"
 
-namespace timax {
+namespace TiStore {
 namespace fs {
 
 enum fs_mask_t {
@@ -101,4 +101,4 @@ struct Directory {
 };
 
 } // namespace fs
-} // namespace timax
+} // namespace TiStore

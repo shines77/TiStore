@@ -1,6 +1,6 @@
 #pragma once
 
-namespace timax {
+namespace TiStore {
 
 class error_code {
 public:
@@ -15,4 +15,4 @@ public:
     };
 };
 
-} // namespace timax
+} // namespace TiStore

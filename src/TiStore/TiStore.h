@@ -1,11 +1,11 @@
 #pragma once
 
-namespace timax {
+namespace TiStore {
 
-class TiStore {
+class TiStoreManager {
 public:
-    TiStore() {}
-    ~TiStore() {}
+    TiStoreManager() {}
+    ~TiStoreManager() {}
 };
 
-} // namespace timax
+} // namespace TiStore

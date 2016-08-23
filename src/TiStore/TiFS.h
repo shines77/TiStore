@@ -3,7 +3,7 @@
 #include "TiStore/basic/cstdint"
 #include "TiStore/fs/FileSystem.h"
 
-namespace timax {
+namespace TiStore {
 
 namespace fs {
 class BlockDevice;
@@ -43,4 +43,4 @@ public:
     }
 };
 
-} // namespace timax
+} // namespace TiStore

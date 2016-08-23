@@ -12,6 +12,10 @@
 #endif
 #define TISTORE_VERSION     MAKE_VERSION(0, 1)
 
+#ifndef CACHE_LINE_SIZE
+#define CACHE_LINE_SIZE     64
+#endif
+
 #ifndef MAX_PATH
 #ifndef PATH_MAX
 #define MAX_PATH    260
@@ -28,7 +32,7 @@
 #define std_strncpy     std::strncpy
 #endif
 
-namespace timax {
+namespace TiStore {
 namespace fs {
 
 #if defined(_WIN32) || defined(WIN32) || defined(OS_WINDOWS) || defined(__WINDOWS__)
@@ -42,4 +46,4 @@ typedef int         native_fd;
 #endif
 
 } // namespace fs
-} // namespace timax
+} // namespace TiStore

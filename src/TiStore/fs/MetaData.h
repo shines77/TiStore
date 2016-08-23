@@ -10,7 +10,7 @@
 #include <string>
 #include <map>
 
-namespace timax {
+namespace TiStore {
 namespace fs {
 
 struct Inode {
@@ -118,11 +118,11 @@ public:
 
     Inode * open_file(File * file, const char * filename, int & err_code) {
         assert(file != nullptr);
-        Inode * fd;
+        Inode * fd = nullptr;
         const_inodemap_iterator inode_iter = inodes_.find(filename);
         if (inode_iter != inodes_.end()) {
             // file or directory is exists.
-            Inode * fd = &inode_iter->second;
+            fd = &inode_iter->second;
             err_code = error_code::no_error;
         }
         else {
@@ -144,4 +144,4 @@ public:
 };
 
 } // namespace fs
-} // namespace timax
+} // namespace TiStore

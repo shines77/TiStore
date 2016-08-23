@@ -2,7 +2,7 @@
 
 #include "TiStore/fs/MetaData.h"
 
-namespace timax {
+namespace TiStore {
 namespace fs {
 
 class Initor {
@@ -21,4 +21,4 @@ public:
 };
 
 } // namespace fs
-} // namespace timax
+} // namespace TiStore

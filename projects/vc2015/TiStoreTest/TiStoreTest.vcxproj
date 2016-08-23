@@ -141,11 +141,13 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\..\src;..\..\..\src\TiStoreTest;..\..\..\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,10 +161,11 @@
     <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\src\TiStoreTest\stop_watch.h" />
     <ClInclude Include="..\..\..\src\TiStore\basic\cstdint" />
     <ClInclude Include="..\..\..\src\TiStore\basic\ssize.h" />
     <ClInclude Include="..\..\..\src\TiStore\basic\stdint.h" />
-    <ClInclude Include="..\..\..\src\TiStore\basic\cssize" />
+    <ClInclude Include="..\..\..\src\TiStore\basic\cstdssize" />
     <ClInclude Include="..\..\..\src\TiStore\fs\BlockDevice.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\Common.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\ErrorCode.h" />
@@ -170,6 +173,9 @@
     <ClInclude Include="..\..\..\src\TiStore\fs\Initor.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\MetaData.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\SuperBlock.h" />
+    <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilter.h" />
+    <ClInclude Include="..\..\..\src\TiStore\kv\Hash.h" />
+    <ClInclude Include="..\..\..\src\TiStore\kv\Slice.h" />
     <ClInclude Include="..\..\..\src\TiStore\TiFS.h" />
     <ClInclude Include="..\..\..\src\TiStore\TiStore.h" />
   </ItemGroup>

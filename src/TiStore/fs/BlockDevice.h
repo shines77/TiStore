@@ -3,7 +3,7 @@
 #include "TiStore/basic/cstdint"
 #include <string>
 
-namespace timax {
+namespace TiStore {
 namespace fs {
 
 class BlockDevice {
@@ -24,4 +24,4 @@ public:
 };
 
 } // namespace fs
-} // namespace timax
+} // namespace TiStore
