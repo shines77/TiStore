@@ -20,9 +20,10 @@ static const int kIterators = 10000000;
 void test_bloomfilter_hash_impl(const char key[])
 {
     StopWatch sw;
-    volatile uint32_t hash;
+    /**/ volatile /**/ uint32_t hash;
     StandardBloomFilter<128, 2> sbf;
     Slice skey(key);
+    printf("key = %s\n\n", skey.toString().c_str());
 
     hash = 0;
     sw.start();

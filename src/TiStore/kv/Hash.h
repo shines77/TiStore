@@ -133,12 +133,12 @@ uint32_t BKDRHash(const char * key, std::size_t len)
     static const uint32_t seed_3 = seed_2 * seed;
     static const uint32_t seed_4 = seed_2 * seed_2;
 
-    const unsigned char * src = (const unsigned char *)key;
-    const unsigned char * end = src + len;
+    register const unsigned char * src = (const unsigned char *)key;
+    register const unsigned char * end = src + len;
     uint32_t hash = 0;
  
 #if 1
-    const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
+    register const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
     while (src != limit) {
         hash = hash * seed_4 + src[0] * seed_3 + src[1] * seed_2 + src[2] * seed + src[3];
         src += 4;
@@ -164,13 +164,13 @@ uint32_t BKDRHash_31(const char * key, std::size_t len)
     static const uint32_t seed_3 = seed_2 * seed;
     static const uint32_t seed_4 = seed_2 * seed_2;
 
-    const unsigned char * src = (const unsigned char *)key;
-    const unsigned char * end = src + len;
-    uint32_t hash = 0;
+    register const unsigned char * src = (const unsigned char *)key;
+    register const unsigned char * end = src + len;
+    register uint32_t hash = 0;
  
 #if 1
-    const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
-    while (src != limit) {
+    register const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
+    while (src < limit) {
         hash = hash * seed_4 + src[0] * seed_3 + src[1] * seed_2 + src[2] * seed + src[3];
         src += 4;
     }
@@ -247,23 +247,23 @@ public:
 
     static hash_type PrimeHash(const char * key, std::size_t len, std::size_t seed) {
         // Similar to murmur hash
-        static const std::size_t _m = 0x00000000C6A4A793ULL;
+        static const std::size_t _m = (std::size_t)0x00000000C6A4A793ULL;
         static const std::size_t half_bits = sizeof(hash_type) * 8 / 2;
         static const std::size_t align_mask = sizeof(hash_type) - 1;
 
-        const char * data = key;
+        register const char * data = key;
         const char * end  = data + len;
 
-        hash_type m = static_cast<hash_type>(_m);
+        static const hash_type m = static_cast<hash_type>(_m);
         hash_type n = static_cast<hash_type>(len);
-        hash_type hash = static_cast<hash_type>((hash_type)seed ^ (m * n));
+        register hash_type hash = static_cast<hash_type>((hash_type)seed ^ (m * n));
         
         if ((std::size_t(data) & align_mask) == 0) {
             // The data address is aligned to sizeof(hash_type) bytes.
-            const char * limit = (const char *)(std::size_t(end) & std::size_t(~(std::size_t)align_mask));
+            register const char * limit = (const char *)(std::size_t(end) & std::size_t(~(std::size_t)align_mask));
             while (data < limit) {
-                hash_type u32 = *(hash_type *)data;
-                hash += u32;
+                hash_type val = *(hash_type *)data;
+                hash += val;
                 hash *= m;
                 hash ^= (hash >> half_bits);
                 data += sizeof(hash_type);
@@ -272,10 +272,10 @@ public:
             if (remain == 0)
                 return hash;
             // Filter the extra bits
-            hash_type u32 = *(hash_type *)data;
-            static const hash_type u32_mask = (hash_type)(-1);
-            u32 &= u32_mask >> ((sizeof(hash_type) - remain) * 8);
-            hash += u32;
+            hash_type val = *(hash_type *)data;
+            static const hash_type val_mask = (hash_type)(-1);
+            val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
+            hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
             return hash;
