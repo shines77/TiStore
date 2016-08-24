@@ -59,7 +59,7 @@ struct Inode {
     }
 };
 
-typedef std::map<std::string, Inode &>  InodeMap;
+typedef std::map<std::string, Inode *>  InodeMap;
 typedef InodeMap::iterator              inodemap_iterator;
 typedef InodeMap::const_iterator        const_inodemap_iterator;
 
@@ -123,7 +123,7 @@ public:
         const_inodemap_iterator inode_iter = inodes_.find(filename);
         if (inode_iter != inodes_.end()) {
             // file or directory is exists.
-            fd = &inode_iter->second;
+            fd = inode_iter->second;
             err_code = error_code::no_error;
         }
         else {
@@ -133,7 +133,7 @@ public:
             if (inode != nullptr) {
                 inode->init();
                 inode->set_name(filename, ::strlen(filename));
-                inodes_.insert(std::make_pair(filename, static_cast<Inode &>(*inode)));
+                inodes_.insert(std::make_pair(std::string(filename), inode));
                 err_code = error_code::no_error;
             }
             else {

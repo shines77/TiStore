@@ -328,7 +328,7 @@ public:
 
     template <std::size_t N>
     static hash_type SecondaryHash(const char (&key)[N]) {
-        return SecondaryHash(key, N, seed);
+        return SecondaryHash(key, N);
     }
 
     static hash_type OpenSSLHash(const char * key, std::size_t len) {
