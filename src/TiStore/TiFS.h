@@ -23,11 +23,11 @@ public:
     int add_device(fs::BlockDevice * device);
 
     int make_fs(const GUID & uuid) {
-        // 
+        return 0;
     }
 
     int make_fs(const char * uuid) {
-        // 
+        return 0;
     }
 
     std::ssize_t open(const char * filename, uint32_t mode) {
