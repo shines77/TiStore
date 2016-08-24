@@ -2,6 +2,8 @@
 
 #include "TiStore/basic/cstdint"
 #include <string>
+#include <string.h>
+#include <memory.h>
 #include <assert.h>
 
 namespace TiStore {
