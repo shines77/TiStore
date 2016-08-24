@@ -157,11 +157,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\TiStoreTest\test.cpp" />
     <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp" />
     <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\TiStoreTest\stop_watch.h" />
+    <ClInclude Include="..\..\..\src\TiStoreTest\test.h" />
     <ClInclude Include="..\..\..\src\TiStore\basic\cstdint" />
     <ClInclude Include="..\..\..\src\TiStore\basic\ssize.h" />
     <ClInclude Include="..\..\..\src\TiStore\basic\stdint.h" />

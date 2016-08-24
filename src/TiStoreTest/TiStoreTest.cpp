@@ -13,6 +13,7 @@
 #include "TiStore/lang/TypeInfo.h"
 
 #include "stop_watch.h"
+#include "test.h"
 
 using namespace TiStore;
 
@@ -98,6 +99,8 @@ int main(int argc, char * argv[])
     file1.close();
 
     test_bloomfilter();
+
+    test_typeinfo_module();
 
     //printf("\n");
 

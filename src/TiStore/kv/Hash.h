@@ -16,7 +16,7 @@ static bool kLittleEndian = true;
 
 namespace hash {
 
-inline uint32_t DecodeFixed32(const char* ptr) {
+static inline uint32_t DecodeFixed32(const char* ptr) {
     if (port::kLittleEndian) {
         // Load the raw bytes
         uint32_t result;
@@ -31,7 +31,7 @@ inline uint32_t DecodeFixed32(const char* ptr) {
     }
 }
 
-inline uint64_t DecodeFixed64(const char* ptr) {
+static inline uint64_t DecodeFixed64(const char* ptr) {
     if (port::kLittleEndian) {
         // Load the raw bytes
         uint64_t result;
@@ -45,7 +45,7 @@ inline uint64_t DecodeFixed64(const char* ptr) {
     }
 }
 
-uint32_t Hash(const char * data, size_t n, uint32_t seed) {
+static uint32_t Hash(const char * data, size_t n, uint32_t seed) {
     // Similar to murmur hash
     static const uint32_t m = 0xc6a4a793;
     static const uint32_t r = 24;
@@ -126,7 +126,7 @@ namespace hash {
 //
 //   hash = hash * seed^4 + a * seed^3 + b * seed^2 + c * seed + d;
 //
-uint32_t BKDRHash(const char * key, std::size_t len)
+static uint32_t BKDRHash(const char * key, std::size_t len)
 {
     static const uint32_t seed = 131U;   // 31, 33, 131, 1313, 13131, 131313, etc ...
     static const uint32_t seed_2 = seed * seed;
@@ -157,7 +157,7 @@ uint32_t BKDRHash(const char * key, std::size_t len)
 //
 //   hash = hash * seed^4 + a * seed^3 + b * seed^2 + c * seed + d;
 //
-uint32_t BKDRHash_31(const char * key, std::size_t len)
+static uint32_t BKDRHash_31(const char * key, std::size_t len)
 {
     static const uint32_t seed = 31U;   // 31, 33, 131, 1313, 13131, 131313, etc ...
     static const uint32_t seed_2 = seed * seed;
@@ -186,7 +186,7 @@ uint32_t BKDRHash_31(const char * key, std::size_t len)
 //
 // APHash Hash Function
 //
-uint32_t APHash(const char * key, std::size_t len)
+static uint32_t APHash(const char * key, std::size_t len)
 {
     const unsigned char * src = (const unsigned char *)key;
     const unsigned char * end = src + len;
@@ -222,7 +222,7 @@ uint32_t APHash(const char * key, std::size_t len)
 //
 // DJB Hash Function
 //
-uint32_t DJBHash(const char * key, std::size_t len)
+static uint32_t DJBHash(const char * key, std::size_t len)
 {
     uint32_t hash = 5381U;
     const unsigned char * src = (const unsigned char *)key;

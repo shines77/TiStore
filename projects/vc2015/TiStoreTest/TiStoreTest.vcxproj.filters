@@ -32,6 +32,9 @@
     <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\TiStoreTest\test.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\TiStore\TiStore.h">
@@ -87,6 +90,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\TiStore\lang\TypeInfo.h">
       <Filter>src\TiStore\lang</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStoreTest\test.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
