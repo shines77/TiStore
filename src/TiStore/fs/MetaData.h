@@ -4,6 +4,7 @@
 #include "TiStore/fs/SuperBlock.h"
 #include "TiStore/fs/ErrorCode.h"
 #include "TiStore/fs/FileSystem.h"
+#include "TiStore/fs/FileSystem.h"
 
 #include <string.h>
 #include <assert.h>
@@ -47,13 +48,13 @@ struct Inode {
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
         errno_t err = ::strncpy_s(name, filename, name_len + 1);
 #else
-        std::strncpy(name, filename, name_len + 1);
+        ::strncpy(name, filename, name_len + 1);
 #endif
     }
 
     void set_name(const char * filename) {
         assert(filename != nullptr);
-        size_t name_len = std::strlen(filename);
+        size_t name_len = ::strlen(filename);
         set_name(filename, name_len);
     }
 };
