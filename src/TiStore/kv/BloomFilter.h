@@ -37,9 +37,11 @@ public:
 
     uint32_t maybe_match2(const Slice & key) {
         uint32_t hash = BloomFilterHash<std::uint32_t>::SecondaryHash(key.data(), key.size());
-        //printf("key  = %s\n", key.data());
-        //printf("hash = %11u (0x%08X)\n", hash, hash);
-        //printf("\n");
+        return hash;
+    }
+
+    uint32_t maybe_match_openssl(const Slice & key) {
+        uint32_t hash = BloomFilterHash<std::uint32_t>::OpenSSLHash(key.data(), key.size());
         return hash;
     }
 

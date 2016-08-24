@@ -115,10 +115,33 @@ See:
     Another hash algorithm: hashpjw(PHP), lh_strhash(OpenSSL), calc_hashnr(MySQL)
     http://blog.chinaunix.net/uid-21457204-id-3061239.html
     http://blog.csdn.net/nhczp/article/details/3040546
+    http://blog.chinaunix.net/uid-20775243-id-2554977.html
 
  **************************************************************************/
 
 namespace hash {
+
+// This string hash function is from OpenSSL.
+static uint32_t OpenSSL_Hash(const char * key, std::size_t len)
+{
+    register const unsigned char * src = (const unsigned char *)key;
+    register const unsigned char * end = src + len;
+    uint32_t hash = 0;
+ 
+    register const unsigned char * limit = src + (len & std::size_t(~(std::size_t)1U));
+    register uint32_t i = 0;
+    while (src < limit) {
+        hash ^= ((uint32_t)(*(unsigned short *)src) << (i & 0x0FU));
+        i++;
+        src += 2;
+    }
+
+    if (src != end) {
+        hash ^= ((uint32_t)(*src) << (i & 0x0FU));
+    }
+ 
+    return hash;
+}
 
 //
 // BKDR Hash Function -- Times31, Times33, Times131 ...
@@ -306,6 +329,10 @@ public:
     template <std::size_t N>
     static hash_type SecondaryHash(const char (&key)[N]) {
         return SecondaryHash(key, N, seed);
+    }
+
+    static hash_type OpenSSLHash(const char * key, std::size_t len) {
+        return static_cast<hash_type>(hash::OpenSSL_Hash(key, len));
     }
 };
 

@@ -50,6 +50,14 @@ void test_bloomfilter_hash_impl(const char key[])
     }
     sw.stop();
     printf("sbf.maybe_match2()        time spent: %8.3f ms, hash: 0x%08X\n\n", sw.getElapsedMillisec(), hash);
+
+    hash = 0;
+    sw.start();
+    for (int i = 0; i < kIterators; ++i) {
+        hash += sbf.maybe_match_openssl(skey);
+    }
+    sw.stop();
+    printf("sbf.maybe_match_openssl() time spent: %8.3f ms, hash: 0x%08X\n\n", sw.getElapsedMillisec(), hash);
 }
 
 void test_bloomfilter_hash()
