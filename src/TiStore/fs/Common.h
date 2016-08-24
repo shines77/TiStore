@@ -28,8 +28,8 @@
 #define std_strcpy      strcpy_s
 #define std_strncpy     strncpy_s
 #else
-#define std_strcpy      std::strcpy
-#define std_strncpy     std::strncpy
+#define std_strcpy      ::strcpy
+#define std_strncpy     ::strncpy
 #endif
 
 namespace TiStore {

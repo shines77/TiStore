@@ -18,7 +18,8 @@ endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 IF (NOT MSVC)
-    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Werror -fPIC -g -pg -pthread")
+    ## -Werror
+    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -fPIC -g -pg -pthread")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -pg ${CMAKE_CXX_FLAGS}")
     ADD_COMPILE_OPTIONS("-std=c++11")
     ADD_COMPILE_OPTIONS("-Wall")

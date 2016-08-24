@@ -3,8 +3,6 @@
 #include "TiStore/fs/Common.h"
 #include "TiStore/fs/SuperBlock.h"
 #include "TiStore/fs/ErrorCode.h"
-#include "TiStore/fs/FileSystem.h"
-#include "TiStore/fs/FileSystem.h"
 
 #include <string.h>
 #include <assert.h>
@@ -13,6 +11,8 @@
 
 namespace TiStore {
 namespace fs {
+
+class File;
 
 struct Inode {
     int32_t  fragment_id;
@@ -132,8 +132,8 @@ public:
             fd = inode;
             if (inode != nullptr) {
                 inode->init();
-                inode->set_name(filename, std::strlen(filename));
-                inodes_.insert(std::make_pair(filename, *inode));
+                inode->set_name(filename, ::strlen(filename));
+                inodes_.insert(std::make_pair(filename, static_cast<Inode &>(*inode)));
                 err_code = error_code::no_error;
             }
             else {

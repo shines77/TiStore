@@ -55,7 +55,7 @@ private:
     char fragment_[MAX_PATH];
 
 public:
-    File() : fd_(nullptr), native_fd_(null_fd), id_(-1), create_new_(true),
+    File() : native_fd_(null_fd), fd_(nullptr), id_(-1), create_new_(true),
         flag_(FS_STAT_UNKNOWN), mode_(FS_MARK_DEFAULT),
         offset_(0), size_(0), capacity_(0), fragment_size_(0) {
         std_strcpy(filename_, "");
