@@ -19,12 +19,12 @@ message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 IF (NOT MSVC)
     ## -Wall -Werror -Wextra -Wno-format -Wno-unused-function
-    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wno-unused-function -fPIC -pthread")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wno-unused-function -fPIC -pthread")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -pg ")
     ADD_COMPILE_OPTIONS("-std=c++11")
     ADD_COMPILE_OPTIONS("-Wall")
-    ## ADD_COMPILE_OPTIONS("-Wextra")
+    ADD_COMPILE_OPTIONS("-Wextra")
 ENDIF()
 
 IF (WIN32)
