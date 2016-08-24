@@ -79,12 +79,12 @@ public:
     // Return true iff "x" is a prefix of "*this"
     bool starts_with(const Slice & x) const {
         return ((size_ >= x.size_) &&
-            (memcmp(data_, x.data_, x.size_) == 0));
+            (::memcmp(data_, x.data_, x.size_) == 0));
     }
 
     bool ends_with(const Slice & x) const {
         return ((size_ >= x.size_) &&
-            (memcmp(data_ + size_ - x.size_, x.data_, x.size_) == 0));
+            (::memcmp(data_ + size_ - x.size_, x.data_, x.size_) == 0));
     }
 
     // Compare two slices and returns the first byte where they differ
@@ -110,7 +110,7 @@ struct SliceParts {
 
 inline bool operator == (const Slice & x, const Slice & y) {
     return ((x.size() == y.size()) &&
-        (memcmp(x.data(), y.data(), x.size()) == 0));
+        (::memcmp(x.data(), y.data(), x.size()) == 0));
 }
 
 inline bool operator != (const Slice & x, const Slice & y) {
@@ -119,7 +119,7 @@ inline bool operator != (const Slice & x, const Slice & y) {
 
 inline int Slice::compare(const Slice & b) const {
     const size_t min_len = (size_ < b.size_) ? size_ : b.size_;
-    int r = memcmp(data_, b.data_, min_len);
+    int r = ::memcmp(data_, b.data_, min_len);
     if (r == 0) {
         if (size_ < b.size_) r = -1;
         else if (size_ > b.size_) r = +1;

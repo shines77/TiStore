@@ -176,6 +176,7 @@
     <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilter.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\Hash.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\Slice.h" />
+    <ClInclude Include="..\..\..\src\TiStore\lang\TypeInfo.h" />
     <ClInclude Include="..\..\..\src\TiStore\TiFS.h" />
     <ClInclude Include="..\..\..\src\TiStore\TiStore.h" />
   </ItemGroup>

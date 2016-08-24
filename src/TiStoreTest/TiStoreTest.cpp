@@ -10,6 +10,7 @@
 #include "TiStore/TiStore.h"
 #include "TiStore/fs/Initor.h"
 #include "TiStore/kv/BloomFilter.h"
+#include "TiStore/lang/TypeInfo.h"
 
 #include "stop_watch.h"
 
@@ -55,11 +56,30 @@ void test_bloomfilter_hash()
     test_bloomfilter_hash_impl("This is a hash test.");
 
     test_bloomfilter_hash_impl("This is a hash test...");
+
+    printf("TypeInfo<char>::type_id()                           = %11u\n", TiStore::TypeInfo<char>::type_id());
+    printf("TypeInfo<int>::type_id()                            = %11u\n", TiStore::TypeInfo<int>::type_id());
+    printf("TypeInfo<StandardBloomFilter<128,2>>::type_id()     = %11u\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::type_id());
+    printf("TypeInfo<StandardBloomFilter<128,2>>::type_id()     = %11u\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::type_id());
+    printf("TypeInfo<StandardBloomFilter<128,4>>::type_id()     = %11u\n", TiStore::TypeInfo<StandardBloomFilter<128,4>>::type_id());
+    printf("TypeInfo<char>::type_id()                           = %11u\n", TiStore::TypeInfo<char>::type_id());
+    printf("\n");
+
+    printf("TypeInfo<char>::hash_code()                         = 0x%08X\n", TiStore::TypeInfo<char>::hash_code());
+    printf("TypeInfo<int>::hash_code()                          = 0x%08X\n", TiStore::TypeInfo<int>::hash_code());
+    printf("TypeInfo<StandardBloomFilter<128,2>>::hash_code()   = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::hash_code());
+    printf("TypeInfo<StandardBloomFilter<128,2>>::hash_code()   = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::hash_code());
+    printf("TypeInfo<StandardBloomFilter<128,4>>::hash_code()   = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilter<128,4>>::hash_code());
+    printf("TypeInfo<char>::hash_code()                         = 0x%08X\n", TiStore::TypeInfo<char>::hash_code());
+    printf("\n");
 }
 
 void test_bloomfilter()
 {
     test_bloomfilter_hash();
+
+    BloomFilter bf;
+    bf.mount();
 }
 
 int main(int argc, char * argv[])

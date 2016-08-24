@@ -2,6 +2,7 @@
 
 #include "TiStore/basic/cstdint"
 #include "TiStore/kv/Hash.h"
+#include "TiStore/lang/TypeInfo.h"
 
 #include <string>
 #include <stdio.h>
@@ -59,11 +60,27 @@ private:
     std::size_t block_size_;
 
 public:
+    BloomFilter() {};
     BloomFilter(const char * name) : name_(name), root_(""),
         capacity_(0), block_size_(0) {}
     virtual ~BloomFilter() {}
 
     bool mount() {
+        printf("TypeInfo<char>::type_id()                           = %11u\n", TiStore::TypeInfo<char>::type_id());
+        printf("TypeInfo<int>::type_id()                            = %11u\n", TiStore::TypeInfo<int>::type_id());
+        printf("TypeInfo<StandardBloomFilter<128,2>>::type_id()     = %11u\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::type_id());
+        printf("TypeInfo<StandardBloomFilter<128,2>>::type_id()     = %11u\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::type_id());
+        printf("TypeInfo<StandardBloomFilter<128,4>>::type_id()     = %11u\n", TiStore::TypeInfo<StandardBloomFilter<128,4>>::type_id());
+        printf("TypeInfo<char>::type_id()                           = %11u\n", TiStore::TypeInfo<char>::type_id());
+        printf("\n");
+
+        printf("TypeInfo<char>::hash_code()                         = 0x%08X\n", TiStore::TypeInfo<char>::hash_code());
+        printf("TypeInfo<int>::hash_code()                          = 0x%08X\n", TiStore::TypeInfo<int>::hash_code());
+        printf("TypeInfo<StandardBloomFilter<128,2>>::hash_code()   = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::hash_code());
+        printf("TypeInfo<StandardBloomFilter<128,2>>::hash_code()   = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilter<128,2>>::hash_code());
+        printf("TypeInfo<StandardBloomFilter<128,4>>::hash_code()   = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilter<128,4>>::hash_code());
+        printf("TypeInfo<char>::hash_code()                         = 0x%08X\n", TiStore::TypeInfo<char>::hash_code());
+        printf("\n");
         return true;
     }
 };

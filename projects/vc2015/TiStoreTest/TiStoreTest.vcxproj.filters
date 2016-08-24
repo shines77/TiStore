@@ -21,6 +21,9 @@
     <Filter Include="src\TiStore\kv">
       <UniqueIdentifier>{58cd0c19-81ba-4b25-8a2d-d7c785ed9c95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TiStore\lang">
+      <UniqueIdentifier>{ef9914cf-990c-451f-81a7-0deacea22237}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp">
@@ -81,6 +84,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\TiStore\basic\cstdssize">
       <Filter>src\TiStore\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\lang\TypeInfo.h">
+      <Filter>src\TiStore\lang</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -47,9 +47,9 @@ inline uint64_t DecodeFixed64(const char* ptr) {
 
 uint32_t Hash(const char * data, size_t n, uint32_t seed) {
     // Similar to murmur hash
-    const uint32_t m = 0xc6a4a793;
-    const uint32_t r = 24;
-    const char* limit = data + n;
+    static const uint32_t m = 0xc6a4a793;
+    static const uint32_t r = 24;
+    const char * limit = data + n;
     uint32_t h = static_cast<uint32_t>(seed ^ (n * m));
 
     // Pick up four bytes at a time
@@ -95,8 +95,8 @@ uint32_t Hash(const char * data, size_t n, uint32_t seed) {
 
 namespace TiStore {
 
-static std::size_t   kDefaultHashSeed   = 0x00000000BC9F1D34ULL;
-static std::uint32_t kDefaultHashSeed32 =         0xBC9F1D34UL;
+static const std::size_t   kDefaultHashSeed   = 0x00000000BC9F1D34ULL;
+static const std::uint32_t kDefaultHashSeed32 =         0xBC9F1D34UL;
 
 /**************************************************************************
 
