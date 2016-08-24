@@ -20,7 +20,7 @@ static inline uint32_t DecodeFixed32(const char* ptr) {
     if (port::kLittleEndian) {
         // Load the raw bytes
         uint32_t result;
-        memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
+        ::memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
         return result;
     }
     else {
@@ -35,7 +35,7 @@ static inline uint64_t DecodeFixed64(const char* ptr) {
     if (port::kLittleEndian) {
         // Load the raw bytes
         uint64_t result;
-        memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
+        ::memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
         return result;
     }
     else {

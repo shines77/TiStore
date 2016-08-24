@@ -6,7 +6,7 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-if (NOT CMAKE_BUILD_TYPE)
+if (CMAKE_BUILD_TYPE)
 else()
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -19,10 +19,11 @@ message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 IF (NOT MSVC)
     ## -Wall -Werror -Wextra
-    set(CMAKE_CXX_FLAGS "-std=c++11 -w -fPIC -g -pg -pthread")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -pg ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -fPIC -pthread")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -pg ")
     ADD_COMPILE_OPTIONS("-std=c++11")
-    ## ADD_COMPILE_OPTIONS("-Wall")
+    ADD_COMPILE_OPTIONS("-Wall")
     ## ADD_COMPILE_OPTIONS("-Wextra")
 ENDIF()
 
