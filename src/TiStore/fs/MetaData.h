@@ -3,8 +3,6 @@
 #include "TiStore/fs/Common.h"
 #include "TiStore/fs/SuperBlock.h"
 #include "TiStore/fs/ErrorCode.h"
-#include "TiStore/fs/FileSystem.h"
-#include "TiStore/fs/FileSystem.h"
 
 #include <string.h>
 #include <assert.h>
@@ -13,6 +11,8 @@
 
 namespace TiStore {
 namespace fs {
+
+class File;
 
 struct Inode {
     int32_t  fragment_id;
