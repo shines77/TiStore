@@ -122,22 +122,22 @@ See:
 namespace hash {
 
 // This string hash function is from OpenSSL.
-static uint32_t OpenSSL_Hash(const char * key, std::size_t len)
+static std::uint32_t OpenSSL_Hash(const char * key, std::size_t len)
 {
     register const unsigned char * src = (const unsigned char *)key;
     register const unsigned char * end = src + len;
-    uint32_t hash = 0;
+    std::uint32_t hash = 0;
  
     register const unsigned char * limit = src + (len & std::size_t(~(std::size_t)1U));
-    register uint32_t i = 0;
+    register std::uint32_t i = 0;
     while (src < limit) {
-        hash ^= ((uint32_t)(*(unsigned short *)src) << (i & 0x0FU));
+        hash ^= ((std::uint32_t)(*(unsigned short *)src) << (i & 0x0FU));
         i++;
         src += 2;
     }
 
     if (src != end) {
-        hash ^= ((uint32_t)(*src) << (i & 0x0FU));
+        hash ^= ((std::uint32_t)(*src) << (i & 0x0FU));
     }
  
     return hash;
@@ -149,16 +149,16 @@ static uint32_t OpenSSL_Hash(const char * key, std::size_t len)
 //
 //   hash = hash * seed^4 + a * seed^3 + b * seed^2 + c * seed + d;
 //
-static uint32_t BKDRHash(const char * key, std::size_t len)
+static std::uint32_t BKDRHash(const char * key, std::size_t len)
 {
-    static const uint32_t seed = 131U;   // 31, 33, 131, 1313, 13131, 131313, etc ...
-    static const uint32_t seed_2 = seed * seed;
-    static const uint32_t seed_3 = seed_2 * seed;
-    static const uint32_t seed_4 = seed_2 * seed_2;
+    static const std::uint32_t seed = 131U;   // 31, 33, 131, 1313, 13131, 131313, etc ...
+    static const std::uint32_t seed_2 = seed * seed;
+    static const std::uint32_t seed_3 = seed_2 * seed;
+    static const std::uint32_t seed_4 = seed_2 * seed_2;
 
     register const unsigned char * src = (const unsigned char *)key;
     register const unsigned char * end = src + len;
-    uint32_t hash = 0;
+    std::uint32_t hash = 0;
  
 #if 1
     register const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
@@ -168,7 +168,7 @@ static uint32_t BKDRHash(const char * key, std::size_t len)
     }
 #endif
     while (src != end) {
-        hash = hash * seed + (uint32_t)(*src);
+        hash = hash * seed + (std::uint32_t)(*src);
         src++;
     }
  
@@ -180,16 +180,16 @@ static uint32_t BKDRHash(const char * key, std::size_t len)
 //
 //   hash = hash * seed^4 + a * seed^3 + b * seed^2 + c * seed + d;
 //
-static uint32_t BKDRHash_31(const char * key, std::size_t len)
+static std::uint32_t BKDRHash_31(const char * key, std::size_t len)
 {
-    static const uint32_t seed = 31U;   // 31, 33, 131, 1313, 13131, 131313, etc ...
-    static const uint32_t seed_2 = seed * seed;
-    static const uint32_t seed_3 = seed_2 * seed;
-    static const uint32_t seed_4 = seed_2 * seed_2;
+    static const std::uint32_t seed = 31U;   // 31, 33, 131, 1313, 13131, 131313, etc ...
+    static const std::uint32_t seed_2 = seed * seed;
+    static const std::uint32_t seed_3 = seed_2 * seed;
+    static const std::uint32_t seed_4 = seed_2 * seed_2;
 
     register const unsigned char * src = (const unsigned char *)key;
     register const unsigned char * end = src + len;
-    register uint32_t hash = 0;
+    register std::uint32_t hash = 0;
  
 #if 1
     register const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
@@ -199,7 +199,7 @@ static uint32_t BKDRHash_31(const char * key, std::size_t len)
     }
 #endif
     while (src != end) {
-        hash = hash * seed + (uint32_t)(*src);
+        hash = hash * seed + (std::uint32_t)(*src);
         src++;
     }
  
@@ -209,33 +209,33 @@ static uint32_t BKDRHash_31(const char * key, std::size_t len)
 //
 // APHash Hash Function
 //
-static uint32_t APHash(const char * key, std::size_t len)
+static std::uint32_t APHash(const char * key, std::size_t len)
 {
     const unsigned char * src = (const unsigned char *)key;
     const unsigned char * end = src + len;
 
-    uint32_t hash = 0;
+    std::uint32_t hash = 0;
 
 #if 1
     const unsigned char * limit = src + (len & std::size_t(~(std::size_t)3U));
     while (src != limit) {
         //if (*src == '\0')
         //    break;
-        hash ^=   ((hash <<  7U) ^ ((uint32_t)src[0]) ^ (hash >> 3U));
-        hash ^= (~((hash << 11U) ^ ((uint32_t)src[1]) ^ (hash >> 5U)));
-        hash ^=   ((hash <<  7U) ^ ((uint32_t)src[2]) ^ (hash >> 3U));
-        hash ^= (~((hash << 11U) ^ ((uint32_t)src[3]) ^ (hash >> 5U)));
+        hash ^=   ((hash <<  7U) ^ ((std::uint32_t)src[0]) ^ (hash >> 3U));
+        hash ^= (~((hash << 11U) ^ ((std::uint32_t)src[1]) ^ (hash >> 5U)));
+        hash ^=   ((hash <<  7U) ^ ((std::uint32_t)src[2]) ^ (hash >> 3U));
+        hash ^= (~((hash << 11U) ^ ((std::uint32_t)src[3]) ^ (hash >> 5U)));
         src += 4;
     }
 #endif
-    uint32_t i = 0;
+    std::uint32_t i = 0;
     while (src != end) {
         //if (*src == '\0')
         //    break;
         if ((i & 1) == 0)
-            hash ^=   ((hash <<  7U) ^ ((uint32_t)(*src)) ^ (hash >> 3U));
+            hash ^=   ((hash <<  7U) ^ ((std::uint32_t)(*src)) ^ (hash >> 3U));
         else
-            hash ^= (~((hash << 11U) ^ ((uint32_t)(*src)) ^ (hash >> 5U)));
+            hash ^= (~((hash << 11U) ^ ((std::uint32_t)(*src)) ^ (hash >> 5U)));
         i++;
         src++;
     }
@@ -245,16 +245,16 @@ static uint32_t APHash(const char * key, std::size_t len)
 //
 // DJB Hash Function
 //
-static uint32_t DJBHash(const char * key, std::size_t len)
+static std::uint32_t DJBHash(const char * key, std::size_t len)
 {
-    uint32_t hash = 5381U;
+    std::uint32_t hash = 5381U;
     const unsigned char * src = (const unsigned char *)key;
     const unsigned char * end = src + len;
  
     while (src != end) {
         if (*src == '\0')
             break;
-        hash += (hash << 5U) + (uint32_t)(*src);
+        hash += (hash << 5U) + (std::uint32_t)(*src);
         src++;
     }
  
