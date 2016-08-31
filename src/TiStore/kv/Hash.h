@@ -268,7 +268,7 @@ class BloomFilterHash {
 public:
     typedef T hash_type;
 
-    static hash_type PrimeHash(const char * key, std::size_t len, std::size_t seed) {
+    static hash_type primaryHash(const char * key, std::size_t len, std::size_t seed) {
         // Similar to murmur hash
         static const std::size_t _m = (std::size_t)0x00000000C6A4A793ULL;
         static const std::size_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -309,26 +309,26 @@ public:
         return hash;
     }
 
-    static hash_type PrimeHash(const Slice & key, std::size_t seed) {
-        return PrimeHash(key.data(), key.size(), seed);
+    static hash_type primaryHash(const Slice & key, std::size_t seed) {
+        return primaryHash(key.data(), key.size(), seed);
     }
 
     template <std::size_t N>
-    static hash_type PrimeHash(const char (&key)[N], std::size_t seed) {
-        return PrimeHash(key, N, seed);
+    static hash_type primaryHash(const char (&key)[N], std::size_t seed) {
+        return primaryHash(key, N, seed);
     }
 
-    static hash_type SecondaryHash(const char * key, std::size_t len) {
+    static hash_type secondaryHash(const char * key, std::size_t len) {
         return static_cast<hash_type>(hash::BKDRHash_31(key, len));
     }
 
-    static hash_type SecondaryHash(const Slice & key) {
-        return SecondaryHash(key.data(), key.size());
+    static hash_type secondaryHash(const Slice & key) {
+        return secondaryHash(key.data(), key.size());
     }
 
     template <std::size_t N>
-    static hash_type SecondaryHash(const char (&key)[N]) {
-        return SecondaryHash(key, N);
+    static hash_type secondaryHash(const char (&key)[N]) {
+        return secondaryHash(key, N);
     }
 
     static hash_type OpenSSLHash(const char * key, std::size_t len) {
