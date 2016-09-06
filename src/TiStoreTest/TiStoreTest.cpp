@@ -19,11 +19,22 @@ using namespace TiStore;
 
 static const int kIterators = 10000000;
 
+#define TEST_VERIFY_BOOL(value, format, var) \
+    printf(format, var, bool_to_string(!!(value)).c_str());
+
+static inline std::string bool_to_string(bool value)
+{
+    if (value)
+        return "true";
+    else
+        return "false";
+}
+
 void test_bloomfilter_hash_impl(const char key[])
 {
     StopWatch sw;
     /**/ volatile /**/ uint32_t hash;
-    StandardBloomFilter<128, 2> sbf;
+    StandardBloomFilter<1024, 10, 2> sbf;
     Slice skey(key);
     printf("key = %s\n\n", skey.toString().c_str());
 
@@ -66,8 +77,43 @@ void test_bloomfilter_hash()
     test_bloomfilter_hash_impl("This is a hash test...");
 }
 
+void test_bloomfilter_impl()
+{
+    //StandardBloomFilter<1024, 10, 2> sbf;
+    StandardBloomFilter<4096 * 8, 10, 3> sbf;
+    bool isMatch;
+
+    Slice skey("abc");
+    sbf.addKey(skey);
+    sbf.addKey("skyinno");
+    sbf.addKey("bigdata");
+    printf("\n");
+
+    isMatch = sbf.maybeMatch(skey);
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", skey.data());
+
+    isMatch = sbf.maybeMatch("skyinno");
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "skyinno");
+
+    isMatch = sbf.maybeMatch("bigdata");
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "bigdata");
+    printf("\n");
+
+    isMatch = sbf.maybeMatch("ambari");
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "ambari");
+
+    isMatch = sbf.maybeMatch("karazanh");
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "karazanh");
+
+    isMatch = sbf.maybeMatch("pokemon go");
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "pokemon go");
+
+    printf("\n");
+}
+
 void test_bloomfilter()
 {
+    test_bloomfilter_impl();
     test_bloomfilter_hash();
 }
 
@@ -87,7 +133,7 @@ int main(int argc, char * argv[])
     file1.close();
 
     test_bloomfilter();
-    test_typeinfo_module();
+    //test_typeinfo_module();
 
     //printf("\n");
 
