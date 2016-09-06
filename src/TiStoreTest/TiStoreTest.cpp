@@ -130,17 +130,22 @@ static int NextLength(int length) {
     else if (length < 1000) {
         length += 100;
     }
-    else {
+    else if (length < 10000) {
         length += 1000;
+    }
+    else {
+        length += 5000;
     }
     return length;
 }
 
 template <typename T>
-double getFalsePositiveRate(T const & bloom_filter) {
+double getFalsePositiveRate(T const & bloom_filter, int length) {
     char buffer[sizeof(int)];
     int result = 0;
-    for (int i = 0; i < 10000; ++i) {
+    //int max_length = (length <= 10000) ? 10000 : length;
+    int max_length = length;
+    for (int i = 0; i < max_length; ++i) {
         if (bloom_filter.maybeMatch(MemIntegerKey(i + 1000000000, buffer))) {
             result++;
         }
@@ -162,9 +167,9 @@ void test_standard_bloomfilter_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    StandardBloomFilter<2049 * 8, 10, 6> bloomfilter(true);
+    StandardBloomFilter<1980 * 8, 10, 6> bloomfilter(true);
 
-    for (int length = 1; length <= 10000; length = NextLength(length)) {
+    for (int length = 1; length <= 50000; length = NextLength(length)) {
         bloomfilter.reset();
         bloomfilter.setVerbose(false);
         for (int i = 0; i < length; i++) {
@@ -180,10 +185,10 @@ void test_standard_bloomfilter_false_positive_rate()
         }
 
         // Check false positive rate
-        double rate = getFalsePositiveRate(bloomfilter);
+        double rate = getFalsePositiveRate(bloomfilter, length);
         if (kVerbose >= 1) {
             fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d\n",
-                rate * 100.0, length, 0);
+                rate * 100.0, length, (int)bloomfilter.getFilterSize());
         }
         if (rate > 0.0125)
             mediocre_filters++;  // Allowed, but not too often
@@ -214,9 +219,9 @@ void test_full_bloomfilter_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    FullBloomFilter<2049 * 8, 10, 6> bloomfilter(true);
+    FullBloomFilter<1980 * 8, 10, 6> bloomfilter(true);
 
-    for (int length = 1; length <= 10000; length = NextLength(length)) {
+    for (int length = 1; length <= 50000; length = NextLength(length)) {
         bloomfilter.reset();
         bloomfilter.setVerbose(false);
         for (int i = 0; i < length; i++) {
@@ -232,10 +237,10 @@ void test_full_bloomfilter_false_positive_rate()
         }
 
         // Check false positive rate
-        double rate = getFalsePositiveRate(bloomfilter);
+        double rate = getFalsePositiveRate(bloomfilter, length);
         if (kVerbose >= 1) {
             fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d\n",
-                rate * 100.0, length, 0);
+                rate * 100.0, length, (int)bloomfilter.getFilterSize());
         }
         if (rate > 0.0125)
             mediocre_filters++;  // Allowed, but not too often

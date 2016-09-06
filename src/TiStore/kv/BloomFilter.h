@@ -97,6 +97,8 @@ public:
     bool getVerbose() const { return verbose_; }
     void setVerbose(bool verbose) { verbose_ = verbose; }
 
+    std::size_t getFilterSize() const { return size_of_bitmap_; }
+
     void initBloomFilter() noexcept {
 #if 1
         bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
@@ -192,7 +194,7 @@ public:
     // StandardBloomFilter
     void addKey(const Slice & key) {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(0, bit_pos);
         if (num_probes_ > 1) {
@@ -200,7 +202,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
+                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 0);
                 setBit(i, bit_pos);
                 hash += secondary_hash;
             }
@@ -212,7 +214,7 @@ public:
     // StandardBloomFilter
     bool maybeMatch(const Slice & key) const {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = isInsideBitmap(0, bit_pos);
         if (!isMatch)
@@ -222,7 +224,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
+                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 0);
                 isMatch = isInsideBitmap(i, bit_pos);
                 if (!isMatch)
                     return false;
@@ -298,12 +300,11 @@ public:
     }
     ~FullBloomFilter() {}
 
-private:
-
-
 public:
     bool getVerbose() const { return verbose_; }
     void setVerbose(bool verbose) { verbose_ = verbose; }
+
+    std::size_t getFilterSize() const { return size_of_bitmap_; }
 
     void initBloomFilter() noexcept {
 #if 1
@@ -404,7 +405,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bits_total_ - 1);
+                bit_pos = hash % ((std::uint32_t)bits_total_ - 0);
                 setBit(bit_pos);
                 hash += secondary_hash;
             }
@@ -426,7 +427,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bits_total_ - 1);
+                bit_pos = hash % ((std::uint32_t)bits_total_ - 0);
                 isMatch = isInsideBitmap(bit_pos);
                 if (!isMatch)
                     return false;
