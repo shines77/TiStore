@@ -290,8 +290,10 @@ private:
 
 public:
     FullBloomFilter(bool verbose = true)
-        : bits_total_(0), bytes_per_probe_((kBitsOfPerProbe + 7) / 8), 
-          num_probes_(kNumProbes), size_of_bitmap_(0), bits_per_key_(kBitsPerKey), verbose_(verbose) {
+        : bits_total_((((kBitsOfPerProbe + 7) / 8) * kNumProbes) * 8),
+          num_probes_(kNumProbes), bytes_per_probe_((kBitsOfPerProbe + 7) / 8), 
+          size_of_bitmap_(((kBitsOfPerProbe + 7) / 8) * kNumProbes), 
+          bits_per_key_(kBitsPerKey), verbose_(verbose) {
         initBloomFilter();
     }
     ~FullBloomFilter() {}
