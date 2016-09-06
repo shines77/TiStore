@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory.h>
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -17,6 +18,7 @@
 
 using namespace TiStore;
 
+static const int kVerbose = 1;
 static const int kIterators = 10000000;
 
 #define TEST_VERIFY_BOOL(value, format, var) \
@@ -84,6 +86,8 @@ void test_bloomfilter_impl()
     bool isMatch;
 
     Slice skey("abc");
+    sbf.setVerbose(true);
+
     sbf.addKey(skey);
     sbf.addKey("skyinno");
     sbf.addKey("bigdata");
@@ -102,8 +106,8 @@ void test_bloomfilter_impl()
     isMatch = sbf.maybeMatch("ambari");
     TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "ambari");
 
-    isMatch = sbf.maybeMatch("karazanh");
-    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "karazanh");
+    isMatch = sbf.maybeMatch("Karazhan");
+    TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "Karazhan");
 
     isMatch = sbf.maybeMatch("pokemon go");
     TEST_VERIFY_BOOL(isMatch, "maybeMatch(\"%s\"): %s\n", "pokemon go");
@@ -111,10 +115,92 @@ void test_bloomfilter_impl()
     printf("\n");
 }
 
+static Slice MemIntegerKey(int i, char * buffer) {
+    ::memcpy(buffer, &i, sizeof(i));
+    return Slice(buffer, sizeof(i));
+}
+
+static int NextLength(int length) {
+    if (length < 10) {
+        length += 1;
+    }
+    else if (length < 100) {
+        length += 10;
+    }
+    else if (length < 1000) {
+        length += 100;
+    }
+    else {
+        length += 1000;
+    }
+    return length;
+}
+
+template <typename T>
+double getFalsePositiveRate(T const & bloom_filter) {
+    char buffer[sizeof(int)];
+    int result = 0;
+    for (int i = 0; i < 10000; ++i) {
+        if (bloom_filter.maybeMatch(MemIntegerKey(i + 1000000000, buffer))) {
+            result++;
+        }
+    }
+    return (double)result / 10000.0;
+}
+
+void test_bloomfilter_false_positive_rate()
+{
+    char buffer[sizeof(int)];
+
+    // Count number of filters that significantly exceed the false positive rate
+    int mediocre_filters = 0;
+    int good_filters = 0;
+    bool isMatch;
+
+    StandardBloomFilter<16384 * 8, 10, 6> bloomfilter(true);
+
+    for (int length = 1; length <= 10000; length = NextLength(length)) {
+        bloomfilter.reset();
+        bloomfilter.setVerbose(false);
+        for (int i = 0; i < length; i++) {
+            bloomfilter.addKey(MemIntegerKey(i, buffer));
+        }
+
+        // All added keys must match
+        for (int i = 0; i < length; ++i) {
+            isMatch = bloomfilter.maybeMatch(MemIntegerKey(i, buffer));
+            if (!isMatch) {
+                std::cout << "[Not Match], Length = " << length << "; key = " << i << std::endl;
+            }
+        }
+
+        // Check false positive rate
+        double rate = getFalsePositiveRate(bloomfilter);
+        if (kVerbose >= 1) {
+            fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d\n",
+                rate * 100.0, length, 0);
+        }
+        if (rate > 0.0125)
+            mediocre_filters++;  // Allowed, but not too often
+        else
+            good_filters++;
+    }
+    if (kVerbose >= 1) {
+        fprintf(stderr, "\n");
+        fprintf(stderr, "Filters: %d good, %d mediocre\n",
+            good_filters, mediocre_filters);
+    }
+    //TEST_ASSERT_LE(mediocre_filters, good_filters / 5);
+
+    fprintf(stderr, "\n");
+}
+
 void test_bloomfilter()
 {
     test_bloomfilter_impl();
     test_bloomfilter_hash();
+
+    test_bloomfilter_false_positive_rate();
 }
 
 int main(int argc, char * argv[])
