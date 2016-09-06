@@ -79,6 +79,7 @@ private:
     std::unique_ptr<unsigned char> bitmap_;
 
     std::size_t bytes_per_probe_;
+    std::size_t bits_per_probe_;
     std::size_t num_probes_;
     std::size_t size_of_bitmap_;
     std::size_t bits_per_key_;
@@ -87,8 +88,8 @@ private:
 
 public:
     StandardBloomFilter(bool verbose = true)
-        : bytes_per_probe_((kBitsOfPerProbe + 7) / 8), num_probes_(kNumProbes),
-          size_of_bitmap_(0), bits_per_key_(kBitsPerKey), verbose_(verbose) {
+        : bytes_per_probe_((kBitsOfPerProbe + 7) / 8), bits_per_probe_((kBitsOfPerProbe + 7) / 8 * 8),
+          num_probes_(kNumProbes), size_of_bitmap_(0), bits_per_key_(kBitsPerKey), verbose_(verbose) {
         initBloomFilter();
     }
     ~StandardBloomFilter() {}
@@ -99,10 +100,12 @@ public:
     void initBloomFilter() noexcept {
 #if 1
         bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
+        bits_per_probe_ = bytes_per_probe_ * 8;
         num_probes_ = static_cast<std::size_t>(kBitsPerKey * 0.69);
         bits_per_key_ = kBitsPerKey;
 #else
         bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
+        bits_per_probe_ = bytes_per_probe_ * 8;
         num_probes_ = kNumProbes;
         //bits_per_key_ = static_cast<std::size_t>(((double)(kNumProbes) + 0.01) / 0.69);
         bits_per_key_ = bytes_per_probe_ * 8 * num_probes_ / kSizeOfTotalKeys;
@@ -124,8 +127,8 @@ public:
                    "total_keys_capacity = %zu keys\n"
                    "bits_per_key        = %0.3f\n",
                    //kSizeOfTotalKeys,
-                   (std::size_t)((double)(bytes_per_probe_ * 8) * 0.69),
-                   (double)(size_of_bitmap_ * 8) / ((double)(bytes_per_probe_ * 8) * 0.69));
+                   (std::size_t)((double)bits_per_probe_ * 0.69),
+                   (double)(size_of_bitmap_ * 8) / ((double)bits_per_probe_ * 0.69));
         }
         unsigned char * new_bitmap = new (std::nothrow) unsigned char [size_of_bitmap_];
         if (new_bitmap) {
@@ -143,10 +146,12 @@ public:
         unsigned char * bitmap = bitmap_.get();
         assert(bitmap != nullptr);
         if (bitmap) {
+            assert(size_of_bitmap_ != 0);
             ::memset((void *)bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
         }
     }
 
+    // StandardBloomFilter
     inline void setBit(std::uint32_t probes, std::uint32_t bit_pos) {
         assert(probes < num_probes_);
         std::uint32_t index, offset;
@@ -159,6 +164,7 @@ public:
         *probe_bits = bits_val;
     }
 
+    // StandardBloomFilter
     inline void clearBit(std::uint32_t probes, std::uint32_t bit_pos) {
         assert(probes < num_probes_);
         std::uint32_t index, offset;
@@ -171,6 +177,7 @@ public:
         *probe_bits = bits_val;
     }
 
+    // StandardBloomFilter
     inline bool isInsideBitmap(std::uint32_t probes, std::uint32_t bit_pos) const {
         assert(probes < num_probes_);
         std::uint32_t index, offset;
@@ -182,9 +189,10 @@ public:
         return ((bits_val & bit_mask) != 0);
     }
 
+    // StandardBloomFilter
     void addKey(const Slice & key) {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % (std::uint32_t)bytes_per_probe_;
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(0, bit_pos);
         if (num_probes_ > 1) {
@@ -192,7 +200,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bytes_per_probe_ - 1);
+                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
                 setBit(i, bit_pos);
                 hash += secondary_hash;
             }
@@ -201,9 +209,10 @@ public:
             printf("addKey(): %s\n", key.data());
     }
 
+    // StandardBloomFilter
     bool maybeMatch(const Slice & key) const {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % (std::uint32_t)bytes_per_probe_;
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = isInsideBitmap(0, bit_pos);
         if (!isMatch)
@@ -213,7 +222,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bytes_per_probe_ - 1);
+                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
                 isMatch = isInsideBitmap(i, bit_pos);
                 if (!isMatch)
                     return false;
@@ -271,17 +280,18 @@ private:
 
     std::unique_ptr<unsigned char> bitmap_;
 
-    std::size_t size_of_bitmap_;
+    std::size_t bits_total_;
     std::size_t num_probes_;
     std::size_t bytes_per_probe_;
+    std::size_t size_of_bitmap_;
     std::size_t bits_per_key_;
 
     bool verbose_;
 
 public:
     FullBloomFilter(bool verbose = true)
-        : size_of_bitmap_(0), bytes_per_probe_((kBitsOfPerProbe + 7) / 8), 
-          num_probes_(kNumProbes), bits_per_key_(kBitsPerKey), verbose_(verbose) {
+        : bits_total_(0), bytes_per_probe_((kBitsOfPerProbe + 7) / 8), 
+          num_probes_(kNumProbes), size_of_bitmap_(0), bits_per_key_(kBitsPerKey), verbose_(verbose) {
         initBloomFilter();
     }
     ~FullBloomFilter() {}
@@ -313,6 +323,7 @@ public:
         }
 
         size_of_bitmap_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, CACHE_LINE_SIZE);
+        bits_total_ = size_of_bitmap_ * 8;
         if (getVerbose()) {
             printf("size_of_bitmap_     = %zu bytes\n", size_of_bitmap_);
             printf("bits_of_bitmap_     = %zu bits\n\n", size_of_bitmap_ * 8);
@@ -322,9 +333,9 @@ public:
                    "bits_per_key        = %0.3f\n",
                    //kSizeOfTotalKeys,
                    (std::size_t)((double)(bytes_per_probe_ * 8) * 0.69),
-                   (double)(size_of_bitmap_ * 8) / ((double)(bytes_per_probe_ * 8) * 0.69));
+                   (double)(bits_total_) / ((double)(bytes_per_probe_ * 8) * 0.69));
         }
-        unsigned char * alignas(8) new_bitmap = new (std::nothrow) unsigned char [size_of_bitmap_];
+        unsigned char * alignas(8) new_bitmap = new (std::nothrow) unsigned char[size_of_bitmap_];
         if (new_bitmap) {
             ::memset((void *)new_bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
             bitmap_.reset(new_bitmap);
@@ -340,12 +351,13 @@ public:
         unsigned char * bitmap = bitmap_.get();
         assert(bitmap != nullptr);
         if (bitmap) {
+            assert(size_of_bitmap_ != 0);
             ::memset((void *)bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
         }
     }
 
+    // FullBloomFilter
     inline void setBit(std::uint32_t bit_pos) {
-        assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
         register std::size_t bit_mask = 1U << offset;
@@ -356,8 +368,8 @@ public:
         *probe_bits = bits_val;
     }
 
+    // FullBloomFilter
     inline void clearBit(std::uint32_t bit_pos) {
-        assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
         register std::size_t bit_mask = ~(1U << offset);
@@ -368,8 +380,8 @@ public:
         *probe_bits = bits_val;
     }
 
+    // FullBloomFilter
     inline bool isInsideBitmap(std::uint32_t bit_pos) const {
-        assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
         register std::size_t bit_mask = 1U << offset;
@@ -379,9 +391,10 @@ public:
         return ((bits_val & bit_mask) != 0);
     }
 
+    // FullBloomFilter
     void addKey(const Slice & key) {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)size_of_bitmap_ - 1);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(bit_pos);
         if (num_probes_ > 1) {
@@ -389,7 +402,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)size_of_bitmap_ - 0);
+                bit_pos = hash % ((std::uint32_t)bits_total_ - 1);
                 setBit(bit_pos);
                 hash += secondary_hash;
             }
@@ -398,9 +411,10 @@ public:
             printf("addKey(): %s\n", key.data());
     }
 
+    // FullBloomFilter
     bool maybeMatch(const Slice & key) const {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)size_of_bitmap_ - 1);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = isInsideBitmap(bit_pos);
         if (!isMatch)
@@ -410,7 +424,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)size_of_bitmap_ - 0);
+                bit_pos = hash % ((std::uint32_t)bits_total_ - 1);
                 isMatch = isInsideBitmap(bit_pos);
                 if (!isMatch)
                     return false;

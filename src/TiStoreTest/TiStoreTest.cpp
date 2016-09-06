@@ -162,7 +162,7 @@ void test_standard_bloomfilter_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    StandardBloomFilter<16384 * 8, 10, 6> bloomfilter(true);
+    StandardBloomFilter<2049 * 8, 10, 6> bloomfilter(true);
 
     for (int length = 1; length <= 10000; length = NextLength(length)) {
         bloomfilter.reset();
@@ -214,7 +214,7 @@ void test_full_bloomfilter_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    FullBloomFilter<16384 * 8, 10, 6> bloomfilter(true);
+    FullBloomFilter<2049 * 8, 10, 6> bloomfilter(true);
 
     for (int length = 1; length <= 10000; length = NextLength(length)) {
         bloomfilter.reset();
