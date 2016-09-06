@@ -130,7 +130,7 @@ public:
                    (std::size_t)((double)bits_per_probe_ * 0.69),
                    (double)(size_of_bitmap_ * 8) / ((double)bits_per_probe_ * 0.69));
         }
-        unsigned char * new_bitmap = new (std::nothrow) unsigned char [size_of_bitmap_];
+        alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char [size_of_bitmap_];
         if (new_bitmap) {
             ::memset((void *)new_bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
             bitmap_.reset(new_bitmap);
@@ -337,7 +337,7 @@ public:
                    (std::size_t)((double)(bytes_per_probe_ * 8) * 0.69),
                    (double)(bits_total_) / ((double)(bytes_per_probe_ * 8) * 0.69));
         }
-        unsigned char * alignas(8) new_bitmap = new (std::nothrow) unsigned char[size_of_bitmap_];
+        alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char[size_of_bitmap_];
         if (new_bitmap) {
             ::memset((void *)new_bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
             bitmap_.reset(new_bitmap);
