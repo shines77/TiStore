@@ -24,16 +24,19 @@ message("----------------------------------")
 
 IF (NOT MSVC)
     ## -Wall -Werror -Wextra -Wno-format -Wno-unused-function
-    set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11 -Wall -Wno-unused-function -fPIC -pthread")
+    set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11 -fPIC")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEFAULT} -O3 -DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEFAULT} -g -pg -D_DEBUG")
-    ##ADD_COMPILE_OPTIONS("-std=c++11")
-    ##ADD_COMPILE_OPTIONS("-Wall")
-    ##ADD_COMPILE_OPTIONS("-Wno-unused-function")
+    ##add_compile_options("-std=c++11")
+    add_compile_options("-Wall")
+    add_compile_options("-Wno-unused-function")
+    add_compile_options("-Wno-deprecated-declarations")
+    add_compile_options("-Wno-unused-variable")
+    ##add_compile_options("-Wextra")
 ENDIF()
 
 IF (WIN32)
-    ADD_COMPILE_OPTIONS("-D_WIN32_WINNT=0x0501")
+    ADD_COMPILE_OPTIONS("-D_WIN32_WINNT=0x0601")
     ADD_COMPILE_OPTIONS("-D_CRT_SECURE_NO_WARNINGS")
     SET(EXTRA_LIBS ${EXTRA_LIBS} ws2_32 mswsock)
 ENDIF()
@@ -59,7 +62,6 @@ ADD_CUSTOM_TARGET(debug
     COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
     COMMENT "Switch CMAKE_BUILD_TYPE to Debug"
-
 )
 
 ADD_CUSTOM_TARGET(release
