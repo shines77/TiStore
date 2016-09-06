@@ -148,7 +148,7 @@ double getFalsePositiveRate(T const & bloom_filter) {
     return (double)result / 10000.0;
 }
 
-void test_bloomfilter_false_positive_rate()
+void test_standard_bloomfilter_false_positive_rate()
 {
     char buffer[sizeof(int)];
 
@@ -157,7 +157,64 @@ void test_bloomfilter_false_positive_rate()
     int good_filters = 0;
     bool isMatch;
 
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << "StandardBloomFilter Test" << std::endl;
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << std::endl;
+
     StandardBloomFilter<16384 * 8, 10, 6> bloomfilter(true);
+
+    for (int length = 1; length <= 10000; length = NextLength(length)) {
+        bloomfilter.reset();
+        bloomfilter.setVerbose(false);
+        for (int i = 0; i < length; i++) {
+            bloomfilter.addKey(MemIntegerKey(i, buffer));
+        }
+
+        // All added keys must match
+        for (int i = 0; i < length; ++i) {
+            isMatch = bloomfilter.maybeMatch(MemIntegerKey(i, buffer));
+            if (!isMatch) {
+                std::cout << "[Not Match], Length = " << length << "; key = " << i << std::endl;
+            }
+        }
+
+        // Check false positive rate
+        double rate = getFalsePositiveRate(bloomfilter);
+        if (kVerbose >= 1) {
+            fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d\n",
+                rate * 100.0, length, 0);
+        }
+        if (rate > 0.0125)
+            mediocre_filters++;  // Allowed, but not too often
+        else
+            good_filters++;
+    }
+    if (kVerbose >= 1) {
+        fprintf(stderr, "\n");
+        fprintf(stderr, "Filters: %d good, %d mediocre\n",
+            good_filters, mediocre_filters);
+    }
+    //TEST_ASSERT_LE(mediocre_filters, good_filters / 5);
+
+    fprintf(stderr, "\n");
+}
+
+void test_full_bloomfilter_false_positive_rate()
+{
+    char buffer[sizeof(int)];
+
+    // Count number of filters that significantly exceed the false positive rate
+    int mediocre_filters = 0;
+    int good_filters = 0;
+    bool isMatch;
+
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << "FullBloomFilter Test" << std::endl;
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << std::endl;
+
+    FullBloomFilter<16384 * 8, 10, 6> bloomfilter(true);
 
     for (int length = 1; length <= 10000; length = NextLength(length)) {
         bloomfilter.reset();
@@ -200,7 +257,8 @@ void test_bloomfilter()
     test_bloomfilter_impl();
     test_bloomfilter_hash();
 
-    test_bloomfilter_false_positive_rate();
+    test_standard_bloomfilter_false_positive_rate();
+    test_full_bloomfilter_false_positive_rate();
 }
 
 int main(int argc, char * argv[])

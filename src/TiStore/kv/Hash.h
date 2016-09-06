@@ -264,7 +264,7 @@ static std::uint32_t DJBHash(const char * key, std::size_t len)
 } // namespace hash
 
 template <typename T = std::uint32_t>
-class BloomFilterHash {
+class HashUtils {
 public:
     typedef T hash_type;
 
