@@ -180,7 +180,7 @@ public:
     }
 
     // StandardBloomFilter
-    inline bool isInsideBitmap(std::uint32_t probes, std::uint32_t bit_pos) const {
+    inline bool insideBitmap(std::uint32_t probes, std::uint32_t bit_pos) const {
         assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
@@ -216,7 +216,7 @@ public:
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
         std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
-        bool isMatch = isInsideBitmap(0, bit_pos);
+        bool isMatch = insideBitmap(0, bit_pos);
         if (!isMatch)
             return false;
         if (num_probes_ > 1) {
@@ -225,7 +225,7 @@ public:
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
                 bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 0);
-                isMatch = isInsideBitmap(i, bit_pos);
+                isMatch = insideBitmap(i, bit_pos);
                 if (!isMatch)
                     return false;
                 hash += secondary_hash;
@@ -384,7 +384,7 @@ public:
     }
 
     // FullBloomFilter
-    inline bool isInsideBitmap(std::uint32_t bit_pos) const {
+    inline bool insideBitmap(std::uint32_t bit_pos) const {
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
         register std::size_t bit_mask = 1U << offset;
@@ -419,7 +419,7 @@ public:
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
         std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
-        bool isMatch = isInsideBitmap(bit_pos);
+        bool isMatch = insideBitmap(bit_pos);
         if (!isMatch)
             return false;
         if (num_probes_ > 1) {
@@ -428,7 +428,7 @@ public:
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
                 bit_pos = hash % ((std::uint32_t)bits_total_ - 0);
-                isMatch = isInsideBitmap(bit_pos);
+                isMatch = insideBitmap(bit_pos);
                 if (!isMatch)
                     return false;
                 hash += secondary_hash;

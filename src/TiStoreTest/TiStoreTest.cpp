@@ -169,7 +169,7 @@ void test_standard_bloomfilter_false_positive_rate()
 
     StandardBloomFilter<1980 * 8, 10, 6> bloomfilter(true);
 
-    for (int length = 1; length <= 50000; length = NextLength(length)) {
+    for (int length = 1; length <= 10000; length = NextLength(length)) {
         bloomfilter.reset();
         bloomfilter.setVerbose(false);
         for (int i = 0; i < length; i++) {
@@ -221,7 +221,7 @@ void test_full_bloomfilter_false_positive_rate()
 
     FullBloomFilter<1980 * 8, 10, 6> bloomfilter(true);
 
-    for (int length = 1; length <= 50000; length = NextLength(length)) {
+    for (int length = 1; length <= 10000; length = NextLength(length)) {
         bloomfilter.reset();
         bloomfilter.setVerbose(false);
         for (int i = 0; i < length; i++) {
@@ -262,8 +262,18 @@ void test_bloomfilter()
     test_bloomfilter_impl();
     test_bloomfilter_hash();
 
+    stop_watch sw;
+    sw.start();
     test_standard_bloomfilter_false_positive_rate();
+    sw.stop();
+
+    printf("time spent: %0.3f ms.\n\n", sw.getElapsedMillisec());
+
+    sw.start();
     test_full_bloomfilter_false_positive_rate();
+    sw.stop();
+
+    printf("time spent: %0.3f ms.\n\n", sw.getElapsedMillisec());
 }
 
 int main(int argc, char * argv[])
