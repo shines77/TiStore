@@ -36,7 +36,7 @@ void test_bloomfilter_hash_impl(const char key[])
 {
     StopWatch sw;
     /**/ volatile /**/ uint32_t hash;
-    StandardBloomFilter<1024, 10, 2> sbf;
+    StandardBloomFilter sbf(8192, 10);
     Slice skey(key);
     printf("key = %s\n\n", skey.toString().c_str());
 
@@ -81,8 +81,7 @@ void test_bloomfilter_hash()
 
 void test_bloomfilter_impl()
 {
-    //StandardBloomFilter<1024, 10, 2> sbf;
-    StandardBloomFilter<4096 * 8, 10, 3> sbf;
+    StandardBloomFilter sbf(8192, 10);
     bool isMatch;
 
     Slice skey("abc");
@@ -167,11 +166,11 @@ void test_standard_bloomfilter_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    StandardBloomFilter<1980 * 8, 10, 6> bloomfilter(true);
+    StandardBloomFilter bloomfilter(10000, 10, true);
 
     for (int length = 1; length <= 10000; length = NextLength(length)) {
+        bloomfilter.setOption(length, 10, false);
         bloomfilter.reset();
-        bloomfilter.setVerbose(false);
         for (int i = 0; i < length; i++) {
             bloomfilter.addKey(MemIntegerKey(i, buffer));
         }
@@ -219,11 +218,11 @@ void test_full_bloomfilter_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    FullBloomFilter<1980 * 8, 10, 6> bloomfilter(true);
+    FullBloomFilter bloomfilter(10000, 10, true);
 
     for (int length = 1; length <= 10000; length = NextLength(length)) {
+        bloomfilter.setOption(length, 10, false);
         bloomfilter.reset();
-        bloomfilter.setVerbose(false);
         for (int i = 0; i < length; i++) {
             bloomfilter.addKey(MemIntegerKey(i, buffer));
         }

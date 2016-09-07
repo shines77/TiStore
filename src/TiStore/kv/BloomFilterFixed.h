@@ -37,92 +37,85 @@ namespace TiStore {
 // See: http://www.yebangyu.org/blog/2016/01/29/insidethebloomfilter/
 //
 
-namespace detail {
-
-static inline
-void get_posinfo(std::uint32_t bit_pos,
-                 std::uint32_t & index,
-                 std::uint32_t & offset)
-{
-#if defined(_WIN64) || defined(_M_X64) || defined(_M_AMD64) \
- || defined(_M_IA64) || defined(__amd64__) || defined(__x86_64__)
-        index  = bit_pos / 64;
-        offset = bit_pos % 64;
-#else
-        index  = bit_pos / 32;
-        offset = bit_pos % 32;
-#endif
-}
-
-} // namesoace detail
-
 //
-// M is the number of the total keys, M ==> kNumTotalKeys = N * K / B.
-// B is the bits of per key, B ==> kBitsPerKey = (N * kNumProbes) / M.
+// N is the bits of one hash (a probe) bitmap, N = (kSizeOfTotalKeys * B) / K, (B = kBitsPerKey).
+// B is the bits of per key, B = kBitsPerKey.
+// K is the number of the different kind hash functions(probes), K = B * ln(2) = kBitsPerKey * 0.69, (ln(2) ~= 0.69)
 //
-// N is the bits of one hash (a probe) bitmap, N ==> kBitsOfPerProbe = (kNumTotalKeys * kBitsPerKey) / kNumProbes.
-// K is the number of the different kind hash functions(probes), K ==> kNumProbes = B * ln(2) = kBitsPerKey * 0.69
+// kSizeOfTotalKeys is the size of total keys. kSizeOfTotalKeys = N * K / B
 //
-class StandardBloomFilter {
+template <std::size_t N, std::size_t B = 10, std::size_t K = 2>
+class StandardBloomFilterFixed {
 private:
+    // The bits of one hash (a probe) bitmap.
+    static const std::size_t kBitsOfPerProbe = BITS_ALIGNED_TO_BITS(N, CACHE_LINE_SIZE);
+    // The bits of per key.
+    static const std::size_t kBitsPerKey = B;
+    // The number of the different kind hash functions (probes).
+    static const std::size_t kNumProbes = K;
+
+    // The size of total keys.
+    static const std::size_t kSizeOfTotalKeys = (std::size_t)((double)(kBitsOfPerProbe) * 0.69);
+
     std::unique_ptr<unsigned char> bitmap_;
 
     std::size_t bytes_per_probe_;
     std::size_t bits_per_probe_;
     std::size_t num_probes_;
-
-    std::size_t bytes_total_;
-    std::size_t num_total_keys_;
+    std::size_t size_of_bitmap_;
     std::size_t bits_per_key_;
 
     bool verbose_;
 
 public:
-    StandardBloomFilter(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true)
-        : bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
-          num_total_keys_(num_total_keys), bits_per_key_(bits_per_key), verbose_(verbose) {
-        initFilter(num_total_keys, bits_per_key);
+    StandardBloomFilterFixed(bool verbose = true)
+        : bytes_per_probe_((kBitsOfPerProbe + 7) / 8), bits_per_probe_((kBitsOfPerProbe + 7) / 8 * 8),
+          num_probes_(kNumProbes), size_of_bitmap_(0), bits_per_key_(kBitsPerKey), verbose_(verbose) {
+        initBloomFilter();
     }
-    ~StandardBloomFilter() {}
+    ~StandardBloomFilterFixed() {}
 
-private:
-    void initFilter(std::size_t num_total_keys, std::size_t bits_per_key) noexcept {
-        bits_per_key_ = bits_per_key;
-        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69);
-        if (num_probes_ < 1)
-            num_probes_ = 1;
-        if (num_probes_ > 30)
-            num_probes_ = 30;
-        std::size_t bytes = num_total_keys * bits_per_key / num_probes_;
-        bytes = BITS_ALIGNED_TO(bytes, CACHE_LINE_SIZE);
-        bytes_per_probe_ = bytes;
-        bits_per_probe_ = bytes * 8;
-        
+    bool getVerbose() const { return verbose_; }
+    void setVerbose(bool verbose) { verbose_ = verbose; }
+
+    std::size_t getFilterSize() const { return size_of_bitmap_; }
+
+    void initBloomFilter() noexcept {
+#if 1
+        bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
+        bits_per_probe_ = bytes_per_probe_ * 8;
+        num_probes_ = static_cast<std::size_t>(kBitsPerKey * 0.69);
+        bits_per_key_ = kBitsPerKey;
+#else
+        bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
+        bits_per_probe_ = bytes_per_probe_ * 8;
+        num_probes_ = kNumProbes;
+        //bits_per_key_ = static_cast<std::size_t>(((double)(kNumProbes) + 0.01) / 0.69);
+        bits_per_key_ = bytes_per_probe_ * 8 * num_probes_ / kSizeOfTotalKeys;
+#endif
         if (getVerbose()) {
-            // Basic information
-            printf("num_total_keys      = %zu keys\n"
-                   "bits_per_key        = %zu\n"
-                   "bits_per_probe      = %zu bits\n"
-                   "bytes_per_probe     = %zu bytes\n"
-                   "num_probes          = %zu\n\n",
-                    num_total_keys_, bits_per_key_, bits_per_probe_,
-                    bytes_per_probe_, num_probes_);
+            printf("bits_per_probe_     = %zu bits\n"
+                   "bytes_per_probe_    = %zu bytes\n"
+                   "bits_per_key_       = %zu\n"
+                   "num_probes_         = %zu\n\n",
+                    kBitsOfPerProbe, bytes_per_probe_, bits_per_key_, num_probes_);
         }
 
-        bytes_total_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, CACHE_LINE_SIZE);
+        size_of_bitmap_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, CACHE_LINE_SIZE);
         if (getVerbose()) {
-            // Alloc information
-            printf("size_of_bitmap      = %zu bytes\n", bytes_total_);
-            printf("bits_of_bitmap      = %zu bits\n\n", bytes_total_ * 8);
+            printf("size_of_bitmap_     = %zu bytes\n", size_of_bitmap_);
+            printf("bits_of_bitmap_     = %zu bits\n\n", size_of_bitmap_ * 8);
             // The maximum capacity of the ideal number of key.
-            printf("total_keys_capacity = %zu keys\n"
+            printf(/*"kSizeOfTotalKeys    = %zu keys\n"*/
+                   "total_keys_capacity = %zu keys\n"
                    "bits_per_key        = %0.3f\n",
+                   //kSizeOfTotalKeys,
                    (std::size_t)((double)bits_per_probe_ * 0.69),
-                   (double)(bytes_total_ * 8) / ((double)bits_per_probe_ * 0.69));
+                   (double)(size_of_bitmap_ * 8) / ((double)bits_per_probe_ * 0.69));
         }
-        alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char [bytes_total_];
+        alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char [size_of_bitmap_];
         if (new_bitmap) {
-            ::memset((void *)new_bitmap, 0, bytes_total_ * sizeof(unsigned char));
+            ::memset((void *)new_bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
             bitmap_.reset(new_bitmap);
         }
         else {
@@ -132,25 +125,12 @@ private:
             printf("\n");
     }
 
-public:
-    bool getVerbose() const { return verbose_; }
-    void setVerbose(bool verbose) { verbose_ = verbose; }
-
-    std::size_t getFilterSize() const { return bytes_total_; }
-
-    // StandardBloomFilter
-    void setOption(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true) {
-        setVerbose(verbose);
-        initFilter(num_total_keys, bits_per_key);
-    }
-
-    // StandardBloomFilter
     void reset() {
         unsigned char * bitmap = bitmap_.get();
         assert(bitmap != nullptr);
         if (bitmap) {
-            assert(bytes_total_ != 0);
-            ::memset((void *)bitmap, 0, bytes_total_ * sizeof(unsigned char));
+            assert(size_of_bitmap_ != 0);
+            ::memset((void *)bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
         }
     }
 
@@ -262,71 +242,86 @@ public:
 };
 
 //
-// M is the number of the total keys, M ==> kNumTotalKeys = N * K / B.
-// B is the bits of per key, B ==> kBitsPerKey = (N * kNumProbes) / M.
+// N is the bits of one hash (a probe) bitmap, N = (kSizeOfTotalKeys * B) / K, (B = kBitsPerKey).
+// B is the bits of per key, B = kBitsPerKey.
+// K is the number of the different kind hash functions(probes), K = B * ln(2) = kBitsPerKey * 0.69, (ln(2) ~= 0.69)
 //
-// N is the bits of total bitmap, N ==> kBitsOfPerProbe = (kNumTotalKeys * kBitsPerKey) / kNumProbes.
-// K is the number of the different kind hash functions(probes), K ==> kNumProbes = B * ln(2) = kBitsPerKey * 0.69
+// kSizeOfTotalKeys is the size of total keys. kSizeOfTotalKeys = N * K / B
 //
-class FullBloomFilter {
+template <std::size_t N, std::size_t B = 10, std::size_t K = 2>
+class FullBloomFilterFixed {
 private:
+    // The bits of one hash (a probe) bitmap.
+    static const std::size_t kBitsOfPerProbe = BITS_ALIGNED_TO_BITS(N, CACHE_LINE_SIZE);
+    // The bits of per key.
+    static const std::size_t kBitsPerKey = B;
+    // The number of the different kind hash functions (probes).
+    static const std::size_t kNumProbes = K;
+
+    // The size of total keys.
+    static const std::size_t kSizeOfTotalKeys = (std::size_t)((double)(kBitsOfPerProbe) * 0.69);
+
     std::unique_ptr<unsigned char> bitmap_;
 
     std::size_t bits_total_;
     std::size_t num_probes_;
     std::size_t bytes_per_probe_;
-
-    std::size_t bytes_total_;
-    std::size_t num_total_keys_;
+    std::size_t size_of_bitmap_;
     std::size_t bits_per_key_;
 
     bool verbose_;
 
 public:
-    FullBloomFilter(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true)
-        : bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
-          bytes_total_(0), num_total_keys_(num_total_keys), bits_per_key_(bits_per_key),
-          verbose_(verbose) {
-        initFilter(num_total_keys, bits_per_key);
+    FullBloomFilterFixed(bool verbose = true)
+        : bits_total_((((kBitsOfPerProbe + 7) / 8) * kNumProbes) * 8),
+          num_probes_(kNumProbes), bytes_per_probe_((kBitsOfPerProbe + 7) / 8), 
+          size_of_bitmap_(((kBitsOfPerProbe + 7) / 8) * kNumProbes), 
+          bits_per_key_(kBitsPerKey), verbose_(verbose) {
+        initBloomFilter();
     }
-    ~FullBloomFilter() {}
+    ~FullBloomFilterFixed() {}
 
-private:
-    void initFilter(std::size_t num_total_keys, std::size_t bits_per_key) noexcept {
-        bits_per_key_ = bits_per_key;
-        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69);
-        if (num_probes_ < 1)
-            num_probes_ = 1;
-        if (num_probes_ > 30)
-            num_probes_ = 30;
+public:
+    bool getVerbose() const { return verbose_; }
+    void setVerbose(bool verbose) { verbose_ = verbose; }
 
-        std::size_t bytes = (num_total_keys * bits_per_key + 7) / 8;
-        bytes_total_ = ALIGNED_TO(bytes, CACHE_LINE_SIZE);
-        bits_total_ = bytes_total_ * 8;
+    std::size_t getFilterSize() const { return size_of_bitmap_; }
 
-        bytes_per_probe_ = (bytes_total_ / num_probes_) + 1;
-
+    void initBloomFilter() noexcept {
+#if 1
+        num_probes_ = static_cast<std::size_t>(kBitsPerKey * 0.69);
+        bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
+        bits_per_key_ = kBitsPerKey;
+#else
+        num_probes_ = kNumProbes;
+        bytes_per_probe_ = BITS_ALIGNED_TO(kBitsOfPerProbe, CACHE_LINE_SIZE);
+        //bits_per_key_ = static_cast<std::size_t>(((double)(kNumProbes) + 0.01) / 0.69);
+        bits_per_key_ = bytes_per_probe_ * 8 * num_probes_ / kSizeOfTotalKeys;
+#endif
         if (getVerbose()) {
-            // Basic information
-            printf("num_total_keys      = %zu keys\n"
-                   "bits_per_key        = %zu\n"
-                   "bits_per_probe      = %zu bits\n"
-                   "bytes_per_probe     = %zu bytes\n"
-                   "num_probes          = %zu\n\n",
-                    num_total_keys_, bits_per_key_, bytes_per_probe_ * 8,
-                    bytes_per_probe_, num_probes_);
-            // Alloc information
-            printf("size_of_bitmap_     = %zu bytes\n", bytes_total_);
-            printf("bits_of_bitmap_     = %zu bits\n\n", bits_total_);
+            printf("bits_per_probe_     = %zu bits\n"
+                   "bytes_per_probe_    = %zu bytes\n"
+                   "bits_per_key_       = %zu\n"
+                   "num_probes_         = %zu\n\n",
+                    kBitsOfPerProbe, bytes_per_probe_, bits_per_key_, num_probes_);
+        }
+
+        size_of_bitmap_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, CACHE_LINE_SIZE);
+        bits_total_ = size_of_bitmap_ * 8;
+        if (getVerbose()) {
+            printf("size_of_bitmap_     = %zu bytes\n", size_of_bitmap_);
+            printf("bits_of_bitmap_     = %zu bits\n\n", size_of_bitmap_ * 8);
             // The maximum capacity of the ideal number of key.
-            printf("total_keys_capacity = %zu keys\n"
+            printf(/*"kSizeOfTotalKeys    = %zu keys\n"*/
+                   "total_keys_capacity = %zu keys\n"
                    "bits_per_key        = %0.3f\n",
+                   //kSizeOfTotalKeys,
                    (std::size_t)((double)(bytes_per_probe_ * 8) * 0.69),
                    (double)(bits_total_) / ((double)(bytes_per_probe_ * 8) * 0.69));
         }
-        alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char[bytes_total_];
+        alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char[size_of_bitmap_];
         if (new_bitmap) {
-            ::memset((void *)new_bitmap, 0, bytes_total_ * sizeof(unsigned char));
+            ::memset((void *)new_bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
             bitmap_.reset(new_bitmap);
         }
         else {
@@ -336,25 +331,12 @@ private:
             printf("\n");
     }
 
-public:
-    bool getVerbose() const { return verbose_; }
-    void setVerbose(bool verbose) { verbose_ = verbose; }
-
-    std::size_t getFilterSize() const { return bytes_total_; }
-
-    // FullBloomFilter
-    void setOption(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true) {
-        setVerbose(verbose);
-        initFilter(num_total_keys, bits_per_key);
-    }
-
-    // FullBloomFilter
     void reset() {
         unsigned char * bitmap = bitmap_.get();
         assert(bitmap != nullptr);
         if (bitmap) {
-            assert(bytes_total_ != 0);
-            ::memset((void *)bitmap, 0, bytes_total_ * sizeof(unsigned char));
+            assert(size_of_bitmap_ != 0);
+            ::memset((void *)bitmap, 0, size_of_bitmap_ * sizeof(unsigned char));
         }
     }
 
@@ -437,7 +419,7 @@ public:
     }
 };
 
-class BloomFilter {
+class BloomFilterFixed {
 private:
     std::string name_;
     std::string root_;
@@ -445,10 +427,10 @@ private:
     std::size_t block_size_;
 
 public:
-    BloomFilter() {};
-    BloomFilter(const char * name) : name_(name), root_(""),
+    BloomFilterFixed() {};
+    BloomFilterFixed(const char * name) : name_(name), root_(""),
         capacity_(0), block_size_(0) {}
-    virtual ~BloomFilter() {}
+    virtual ~BloomFilterFixed() {}
 
     bool build() {
         return true;
