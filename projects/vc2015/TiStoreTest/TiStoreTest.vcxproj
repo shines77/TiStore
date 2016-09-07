@@ -176,6 +176,7 @@
     <ClInclude Include="..\..\..\src\TiStore\fs\MetaData.h" />
     <ClInclude Include="..\..\..\src\TiStore\fs\SuperBlock.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilter.h" />
+    <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilterFixed.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\Hash.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\Slice.h" />
     <ClInclude Include="..\..\..\src\TiStore\lang\TypeInfo.h" />

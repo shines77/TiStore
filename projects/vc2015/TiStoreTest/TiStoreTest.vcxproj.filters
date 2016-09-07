@@ -94,5 +94,8 @@
     <ClInclude Include="..\..\..\src\TiStoreTest\test.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilterFixed.h">
+      <Filter>src\TiStore\kv</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

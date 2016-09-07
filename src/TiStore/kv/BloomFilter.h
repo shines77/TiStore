@@ -159,7 +159,7 @@ public:
         assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
-        register std::size_t bit_mask = 1U << offset;
+        register std::size_t bit_mask = std::size_t(1) << offset;
         std::size_t * probe_bits = (std::size_t *)(bitmap_.get() + probes * bytes_per_probe_) + index;
         assert(probe_bits != nullptr);
         register std::size_t bits_val = (*probe_bits);
@@ -172,7 +172,7 @@ public:
         assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
-        register std::size_t bit_mask = ~(1U << offset);
+        register std::size_t bit_mask = ~(std::size_t(1) << offset);
         std::size_t * probe_bits = (std::size_t *)(bitmap_.get() + probes * bytes_per_probe_) + index;
         assert(probe_bits != nullptr);
         register std::size_t bits_val = (*probe_bits);
@@ -185,7 +185,7 @@ public:
         assert(probes < num_probes_);
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
-        register std::size_t bit_mask = 1U << offset;
+        register std::size_t bit_mask = std::size_t(1) << offset;
         std::size_t * probe_bits = (std::size_t *)(bitmap_.get() + probes * bytes_per_probe_) + index;
         assert(probe_bits != nullptr);
         register std::size_t bits_val = (*probe_bits);
@@ -362,7 +362,7 @@ public:
     inline void setBit(std::uint32_t bit_pos) {
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
-        register std::size_t bit_mask = 1U << offset;
+        register std::size_t bit_mask = std::size_t(1) << offset;
         std::size_t * probe_bits = (std::size_t *)(bitmap_.get()) + index;
         assert(probe_bits != nullptr);
         register std::size_t bits_val = (*probe_bits);
@@ -374,7 +374,7 @@ public:
     inline void clearBit(std::uint32_t bit_pos) {
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
-        register std::size_t bit_mask = ~(1U << offset);
+        register std::size_t bit_mask = ~(std::size_t(1) << offset);
         std::size_t * probe_bits = (std::size_t *)(bitmap_.get()) + index;
         assert(probe_bits != nullptr);
         register std::size_t bits_val = (*probe_bits);
@@ -386,7 +386,7 @@ public:
     inline bool insideBitmap(std::uint32_t bit_pos) const {
         std::uint32_t index, offset;
         detail::get_posinfo(bit_pos, index, offset);
-        register std::size_t bit_mask = 1U << offset;
+        register std::size_t bit_mask = std::size_t(1) << offset;
         std::size_t * probe_bits = (std::size_t *)(bitmap_.get()) + index;
         assert(probe_bits != nullptr);
         register std::size_t bits_val = (*probe_bits);
