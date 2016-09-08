@@ -365,18 +365,16 @@ public:
     typedef T hash_type;
 
 private:
-    static inline
     template <std::uint32_t MissAlign>
-    hash_type decode_value(const char * data) {
+    static inline hash_type decode_value(const char * data) {
         // Maybe got a error
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::decode_value(), MissAlign maybe overflow.");
         return 0;
     }
 
 public:
-    static
     template <std::uint32_t MissAlign>
-    hash_type value(const char * key, std::size_t len, std::size_t seed) {
+    static hash_type value(const char * key, std::size_t len, std::size_t seed) {
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::value(), N maybe overflow.");
         return 0;
     }
@@ -393,23 +391,20 @@ private:
         return ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16) | ((hash_type)data[2] << 8) | ((hash_type)data[3]);
     }
 
-    static inline
     template <std::uint32_t MissAlign>
-    hash_type decode_value(const char * data) {
+    static inline hash_type decode_value(const char * data) {
         return 0;
     }
 
-    static inline
     template <>
-    hash_type decode_value<0U>(const char * data) {
+    static inline hash_type decode_value<0U>(const char * data) {
         assert(data != nullptr);
         hash_type value = *(hash_type *)(data);
         return value;
     }
 
-    static inline
     template <>
-    hash_type decode_value<1U>(const char * data) {
+    static inline hash_type decode_value<1U>(const char * data) {
         static const std::uint32_t M = 1;
         static const hash_type mask = (hash_type)(-1);
         assert(data != nullptr);
@@ -417,9 +412,8 @@ private:
         return value;
     }
 
-    static inline 
     template <>
-    hash_type decode_value<2U>(const char * data) {
+    static inline hash_type decode_value<2U>(const char * data) {
         static const std::uint32_t M = 2;
         static const hash_type mask = (hash_type)(-1);
         assert(data != nullptr);
@@ -427,9 +421,8 @@ private:
         return value;
     }
 
-    static inline
     template <>
-    hash_type decode_value<3U>(const char * data) {
+    static inline hash_type decode_value<3U>(const char * data) {
         static const std::uint32_t M = 3;
         static const hash_type mask = (hash_type)(-1);
         assert(data != nullptr);
@@ -438,9 +431,8 @@ private:
     }
 
 public:
-    static
     template <std::uint32_t MissAlign>
-    hash_type value(const char * key, std::size_t len, std::size_t seed) {
+    static hash_type value(const char * key, std::size_t len, std::size_t seed) {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -490,9 +482,8 @@ private:
         return value;
     }
 
-    static inline
     template <std::uint32_t MissAlign>
-    hash_type decode_value(const char * data) {
+    static inline hash_type decode_value(const char * data) {
         static const std::uint32_t M = MissAlign % N;
         static const hash_type mask = (hash_type)(-1);
         hash_type value;
@@ -502,9 +493,8 @@ private:
         return value;
     }
 
-    static inline
     template <>
-    hash_type decode_value<0U>(const char * data) {
+    static inline hash_type decode_value<0U>(const char * data) {
         hash_type value;
         assert(data != nullptr);
         value = *(hash_type *)(data);
@@ -512,9 +502,8 @@ private:
     }
 
 public:
-    static
     template <std::uint32_t MissAlign>
-    hash_type value(const char * key, std::size_t len, std::size_t seed) {
+    static hash_type value(const char * key, std::size_t len, std::size_t seed) {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -748,8 +737,8 @@ public:
         return hash;
     }
 
-//#undef _IS_X86_64_
-//#undef _IS_X86_32_
+#undef _IS_X86_64_
+#undef _IS_X86_32_
 
     static hash_type primaryHash(const char * key, std::size_t len, std::size_t seed) {
         static const std::uint32_t N = sizeof(hash_type);
