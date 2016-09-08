@@ -754,30 +754,30 @@ public:
 
         PrimaryHash<T, sizeof(hash_type)> primaryHash_;
         if (missalign == 0) {
-            return primaryHash_.value<0U>(key, len, seed);
+            return primaryHash_.template value<0U>(key, len, seed);
         }
         else if (missalign == 1) {
-            return primaryHash_.value<1U>(key, len, seed);
+            return primaryHash_.template value<1U>(key, len, seed);
         }
         else if (missalign == 2) {
-            return primaryHash_.value<2U>(key, len, seed);
+            return primaryHash_.template value<2U>(key, len, seed);
         }
         else if (missalign == 3) {
-            return primaryHash_.value<3U>(key, len, seed);
+            return primaryHash_.template value<3U>(key, len, seed);
         }
         else {
             if (N > 4) {
                 if (missalign == 4) {
-                    return primaryHash_.value<4U>(key, len, seed);
+                    return primaryHash_.template value<4U>(key, len, seed);
                 }
                 else if (missalign == 5) {
-                    return primaryHash_.value<5U>(key, len, seed);
+                    return primaryHash_.template value<5U>(key, len, seed);
                 }
                 else if (missalign == 6) {
-                    return primaryHash_.value<6U>(key, len, seed);
+                    return primaryHash_.template value<6U>(key, len, seed);
                 }
                 else if (missalign == 7) {
-                    return primaryHash_.value<7U>(key, len, seed);
+                    return primaryHash_.template value<7U>(key, len, seed);
                 }
             }
             else {
