@@ -365,7 +365,7 @@ public:
     typedef T hash_type;
 
 private:
-    template <std::uint32_t MissAlign>
+    template <std::uint32_t MissAlign, std::uint32_t Dummy = 0>
     static inline hash_type decode_value(const char * data) {
         // Maybe got a error
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::decode_value(), MissAlign maybe overflow.");
@@ -391,20 +391,20 @@ private:
         return ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16) | ((hash_type)data[2] << 8) | ((hash_type)data[3]);
     }
 
-    template <std::uint32_t MissAlign>
+    template <std::uint32_t MissAlign, std::uint32_t Dummy>
     static inline hash_type decode_value(const char * data) {
         return 0;
     }
 
-    template <>
-    static inline hash_type decode_value<0U>(const char * data) {
+    template <std::uint32_t Dummy>
+    static inline hash_type decode_value<0U, Dummy>(const char * data) {
         assert(data != nullptr);
         hash_type value = *(hash_type *)(data);
         return value;
     }
 
-    template <>
-    static inline hash_type decode_value<1U>(const char * data) {
+    template <std::uint32_t Dummy>
+    static inline hash_type decode_value<1U, Dummy>(const char * data) {
         static const std::uint32_t M = 1;
         static const hash_type mask = (hash_type)(-1);
         assert(data != nullptr);
@@ -412,8 +412,8 @@ private:
         return value;
     }
 
-    template <>
-    static inline hash_type decode_value<2U>(const char * data) {
+    template <std::uint32_t Dummy>
+    static inline hash_type decode_value<2U, Dummy>(const char * data) {
         static const std::uint32_t M = 2;
         static const hash_type mask = (hash_type)(-1);
         assert(data != nullptr);
@@ -421,8 +421,8 @@ private:
         return value;
     }
 
-    template <>
-    static inline hash_type decode_value<3U>(const char * data) {
+    template <std::uint32_t Dummy>
+    static inline hash_type decode_value<3U, Dummy>(const char * data) {
         static const std::uint32_t M = 3;
         static const hash_type mask = (hash_type)(-1);
         assert(data != nullptr);
@@ -449,7 +449,7 @@ public:
         // The data address is aligned to sizeof(hash_type) bytes.
         register const char * limit = (const char *)(data + (len & ~(std::size_t)align_mask));
         while (data < limit) {
-            hash_type val = PrimaryHash<T, 4>::decode_value<MissAlign>(data);
+            hash_type val = PrimaryHash<T, 4U>::decode_value<MissAlign, 0>(data);
             hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
@@ -459,7 +459,7 @@ public:
         if (remain == 0)
             return hash;
         // Filter the extra bits
-        hash_type val = PrimaryHash<T, 4>::decode_value<MissAlign>(data);
+        hash_type val = PrimaryHash<T, 4U>::decode_value<MissAlign, 0>(data);
         static const hash_type val_mask = (hash_type)(-1);
         val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
         hash += val;
@@ -482,7 +482,7 @@ private:
         return value;
     }
 
-    template <std::uint32_t MissAlign>
+    template <std::uint32_t MissAlign,  std::uint32_t Dummy>
     static inline hash_type decode_value(const char * data) {
         static const std::uint32_t M = MissAlign % N;
         static const hash_type mask = (hash_type)(-1);
@@ -493,8 +493,8 @@ private:
         return value;
     }
 
-    template <>
-    static inline hash_type decode_value<0U>(const char * data) {
+    template <std::uint32_t Dummy>
+    static inline hash_type decode_value<0U, Dummy>(const char * data) {
         hash_type value;
         assert(data != nullptr);
         value = *(hash_type *)(data);
@@ -520,7 +520,7 @@ public:
         // The data address is aligned to sizeof(hash_type) bytes.
         register const char * limit = (const char *)(data + (len & ~(std::size_t)align_mask));
         while (data < limit) {
-            hash_type val = PrimaryHash<T, 8>::decode_value<MissAlign>(data);
+            hash_type val = PrimaryHash<T, 8U>::decode_value<MissAlign, 0>(data);
             hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
@@ -530,7 +530,7 @@ public:
         if (remain == 0)
             return hash;
         // Filter the extra bits
-        hash_type val = PrimaryHash<T, 8>::decode_value<MissAlign>(data);
+        hash_type val = PrimaryHash<T, 8U>::decode_value<MissAlign, 0>(data);
         static const hash_type val_mask = (hash_type)(-1);
         val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
         hash += val;
