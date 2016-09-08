@@ -144,7 +144,7 @@ double getFalsePositiveRate(T const & bloom_filter, int length) {
     int result = 0;
     //int max_length = (length <= 10000) ? 10000 : length;
     int max_length = length;
-    for (int i = 0; i < max_length; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         if (bloom_filter.maybeMatch(MemIntegerKey(i + 1000000000, buffer))) {
             result++;
         }
@@ -166,10 +166,10 @@ void test_bloomfilter_standard_false_positive_rate()
     std::cout << "----------------------------------" << std::endl;
     std::cout << std::endl;
 
-    StandardBloomFilter bloomfilter(10000, 10, true);
+    StandardBloomFilter bloomfilter(10000, 14, true);
 
     for (int length = 1; length <= 10000; length = NextLength(length)) {
-        bloomfilter.setOption(length, 10, false);
+        bloomfilter.setOption(length, 14, false);
         bloomfilter.reset();
         for (int i = 0; i < length; i++) {
             bloomfilter.addKey(MemIntegerKey(i, buffer));

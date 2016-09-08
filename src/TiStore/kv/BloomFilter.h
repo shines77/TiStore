@@ -101,7 +101,7 @@ public:
 private:
     void initFilter(std::size_t num_total_keys, std::size_t bits_per_key) noexcept {
         bits_per_key_ = bits_per_key;
-        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69 * 0.5);
+        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69 * 0.6);
         if (num_probes_ < 1)
             num_probes_ = 1;
         if (num_probes_ > 30)
