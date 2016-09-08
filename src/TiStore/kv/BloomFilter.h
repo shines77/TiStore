@@ -177,10 +177,10 @@ public:
         unsigned char * bitmap = bitmap_.get();
         unsigned char * cur;
         //printf("| ");
-        for (int k = 0; k < num_probes_; k++) {
+        for (int k = 0; k < (int)num_probes_; k++) {
             cur = bitmap + bytes_per_probe_ * k;
             probe_used = 0;
-            for (int n = 0; n < bytes_per_probe_; n++) {
+            for (int n = 0; n < (int)bytes_per_probe_; n++) {
                 std::size_t bits = BitsSetTable256[*cur];
                 probe_used += bits;
                 total_used += bits;
@@ -409,7 +409,7 @@ public:
     std::size_t getUsedBits() const {
         std::size_t total_used = 0;
         unsigned char * cur = bitmap_.get();
-        for (int n = 0; n < bytes_total_; n++) {
+        for (int n = 0; n < (int)bytes_total_; n++) {
             std::size_t bits = BitsSetTable256[*cur];
             total_used += bits;
             cur++;
