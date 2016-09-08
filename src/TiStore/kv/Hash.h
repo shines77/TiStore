@@ -737,8 +737,8 @@ public:
         return hash;
     }
 
-#undef _IS_X86_64_
-#undef _IS_X86_32_
+//#undef _IS_X86_64_
+//#undef _IS_X86_32_
 
     hash_type primaryHash(const char * key, std::size_t len, std::size_t seed) const {
         static const std::uint32_t N = sizeof(hash_type);
