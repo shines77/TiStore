@@ -366,7 +366,7 @@ public:
 
 private:
     template <typename U, std::uint32_t MissAlign>
-    static inline hash_type decode_value(U const * data) {
+    inline hash_type decode_value(U const * data) {
         // Maybe got a error
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::decode_value(), MissAlign maybe overflow.");
         return 0;
@@ -374,7 +374,7 @@ private:
 
 public:
     template <std::uint32_t MissAlign>
-    static hash_type value(const char * key, std::size_t len, std::size_t seed) {
+    hash_type value(const char * key, std::size_t len, std::size_t seed) {
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::value(), N maybe overflow.");
         return 0;
     }
@@ -392,14 +392,14 @@ private:
              | ((hash_type)data[2] <<  8) | ((hash_type)data[3]);
     }
 
-    template <typename U, std::uint32_t MissAlign>
-    static inline hash_type decode_value(U const * data) {
-        return decode_value_generic(data);
+    template <std::uint32_t MissAlign>
+    inline hash_type decode_value(const char * data) {
+        return PrimaryHash<T, 4U>::decode_value_generic(data);
     }
 
 public:
     template <std::uint32_t MissAlign>
-    static hash_type value(const char * key, std::size_t len, std::size_t seed) {
+    hash_type value(const char * key, std::size_t len, std::size_t seed) {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -416,7 +416,7 @@ public:
         // The data address is aligned to sizeof(hash_type) bytes.
         register const char * limit = (const char *)(data + (len & ~(std::size_t)align_mask));
         while (data < limit) {
-            hash_type val = PrimaryHash<T, 4U>::template decode_value<char, MissAlign>(data);
+            hash_type val = PrimaryHash<T, 4U>::template decode_value<MissAlign>(data);
             hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
@@ -426,7 +426,7 @@ public:
         if (remain == 0)
             return hash;
         // Filter the extra bits
-        hash_type val = PrimaryHash<T, 4U>::template decode_value<char, MissAlign>(data);
+        hash_type val = PrimaryHash<T, 4U>::template decode_value<MissAlign>(data);
         static const hash_type val_mask = (hash_type)(-1);
         val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
         hash += val;
@@ -443,9 +443,9 @@ public:
 //
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::uint32_t, 4U>::hash_type
-PrimaryHash<std::uint32_t, 4U>::decode_value<char, 0U>(const char * data) {
+PrimaryHash<std::uint32_t, 4U>::decode_value<0U>(const char * data) {
     assert(data != nullptr);
     hash_type value = *(hash_type *)(data);
     return value;
@@ -453,9 +453,9 @@ PrimaryHash<std::uint32_t, 4U>::decode_value<char, 0U>(const char * data) {
 
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::uint32_t, 4U>::hash_type
-PrimaryHash<std::uint32_t, 4U>::decode_value<char, 1U>(const char * data) {
+PrimaryHash<std::uint32_t, 4U>::decode_value<1U>(const char * data) {
     static const std::uint32_t M = 1;
     static const hash_type mask = (hash_type)(-1);
     assert(data != nullptr);
@@ -466,9 +466,9 @@ PrimaryHash<std::uint32_t, 4U>::decode_value<char, 1U>(const char * data) {
 
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::uint32_t, 4U>::hash_type
-PrimaryHash<std::uint32_t, 4U>::decode_value<char, 2U>(const char * data) {
+PrimaryHash<std::uint32_t, 4U>::decode_value<2U>(const char * data) {
     static const std::uint32_t M = 2;
     static const hash_type mask = (hash_type)(-1);
     assert(data != nullptr);
@@ -479,9 +479,9 @@ PrimaryHash<std::uint32_t, 4U>::decode_value<char, 2U>(const char * data) {
 
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::uint32_t, 4U>::hash_type
-PrimaryHash<std::uint32_t, 4U>::decode_value<char, 3U>(const char * data) {
+PrimaryHash<std::uint32_t, 4U>::decode_value<3U>(const char * data) {
     static const std::uint32_t M = 3;
     static const hash_type mask = (hash_type)(-1);
     assert(data != nullptr);
@@ -505,8 +505,8 @@ private:
         return value;
     }
 
-    template <typename U, std::uint32_t MissAlign>
-    static inline hash_type decode_value(U const * data) {
+    template <std::uint32_t MissAlign>
+    inline hash_type decode_value(const char * data) {
         static const std::uint32_t M = MissAlign % N;
         static const hash_type mask = (hash_type)(-1);
         hash_type value;
@@ -519,7 +519,7 @@ private:
 
 public:
     template <std::uint32_t MissAlign>
-    static hash_type value(const char * key, std::size_t len, std::size_t seed) {
+    hash_type value(const char * key, std::size_t len, std::size_t seed) {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -536,7 +536,7 @@ public:
         // The data address is aligned to sizeof(hash_type) bytes.
         register const char * limit = (const char *)(data + (len & ~(std::size_t)align_mask));
         while (data < limit) {
-            hash_type val = PrimaryHash<T, 8U>::template decode_value<char, MissAlign>(data);
+            hash_type val = PrimaryHash<T, 8U>::template decode_value<MissAlign>(data);
             hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
@@ -546,7 +546,7 @@ public:
         if (remain == 0)
             return hash;
         // Filter the extra bits
-        hash_type val = PrimaryHash<T, 8U>::template decode_value<char, MissAlign>(data);
+        hash_type val = PrimaryHash<T, 8U>::template decode_value<MissAlign>(data);
         static const hash_type val_mask = (hash_type)(-1);
         val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
         hash += val;
@@ -563,9 +563,9 @@ public:
 //
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::uint32_t, 8U>::hash_type
-PrimaryHash<std::uint32_t, 8U>::decode_value<char, 0U>(char const * data) {
+PrimaryHash<std::uint32_t, 8U>::decode_value<0U>(char const * data) {
     hash_type value;
     assert(data != nullptr);
     value = *(hash_type *)(data);
@@ -574,9 +574,9 @@ PrimaryHash<std::uint32_t, 8U>::decode_value<char, 0U>(char const * data) {
 
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::int32_t, 8U>::hash_type
-PrimaryHash<std::int32_t, 8U>::decode_value<char, 0U>(char const * data) {
+PrimaryHash<std::int32_t, 8U>::decode_value<0U>(char const * data) {
     hash_type value;
     assert(data != nullptr);
     value = *(hash_type *)(data);
@@ -585,9 +585,9 @@ PrimaryHash<std::int32_t, 8U>::decode_value<char, 0U>(char const * data) {
 
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::uint64_t, 8U>::hash_type
-PrimaryHash<std::uint64_t, 8U>::decode_value<char, 0U>(char const * data) {
+PrimaryHash<std::uint64_t, 8U>::decode_value<0U>(char const * data) {
     hash_type value;
     assert(data != nullptr);
     value = *(hash_type *)(data);
@@ -596,9 +596,9 @@ PrimaryHash<std::uint64_t, 8U>::decode_value<char, 0U>(char const * data) {
 
 template <>
 template <>
-static inline
+inline
 typename PrimaryHash<std::int64_t, 8U>::hash_type
-PrimaryHash<std::int64_t, 8U>::decode_value<char, 0U>(char const * data) {
+PrimaryHash<std::int64_t, 8U>::decode_value<0U>(char const * data) {
     hash_type value;
     assert(data != nullptr);
     value = *(hash_type *)(data);
@@ -813,32 +813,34 @@ public:
 #if defined(_IS_X86_64_) || defined(_IS_X86_32_)
         return primaryHash_align(key, len, seed);
 #else
-        std::uint32_t missalign = static_cast<std::uint32_t>(reinterpret_cast<std::size_t>(key)) & align_mask;
+        std::uint32_t missalign = static_cast<std::uint32_t>(reinterpret_cast<std::size_t>(key))
+                                    & align_mask;
+        PrimaryHash<T, sizeof(hash_type)> primaryHash;
         if (missalign == 0) {
-            return PrimaryHash<T, sizeof(hash_type)>::value<0>(key, len, seed);
+            return primaryHash.value<0>(key, len, seed);
         }
         else if (missalign == 1) {
-            return PrimaryHash<T, sizeof(hash_type)>::value<1>(key, len, seed);
+            return primaryHash.value<1>(key, len, seed);
         }
         else if (missalign == 2) {
-            return PrimaryHash<T, sizeof(hash_type)>::value<2>(key, len, seed);
+            return primaryHash.value<2>(key, len, seed);
         }
         else if (missalign == 3) {
-            return PrimaryHash<T, sizeof(hash_type)>::value<3>(key, len, seed);
+            return primaryHash.value<3>(key, len, seed);
         }
         else {
             if (N > 4) {
                 if (missalign == 4) {
-                    return PrimaryHash<T, sizeof(hash_type)>::value<4>(key, len, seed);
+                    return primaryHash.value<4>(key, len, seed);
                 }
                 else if (missalign == 5) {
-                    return PrimaryHash<T, sizeof(hash_type)>::value<5>(key, len, seed);
+                    return primaryHash.value<5>(key, len, seed);
                 }
                 else if (missalign == 6) {
-                    return PrimaryHash<T, sizeof(hash_type)>::value<6>(key, len, seed);
+                    return primaryHash.value<6>(key, len, seed);
                 }
                 else if (missalign == 7) {
-                    return PrimaryHash<T, sizeof(hash_type)>::value<7>(key, len, seed);
+                    return primaryHash.value<7>(key, len, seed);
                 }
             }
             else {
