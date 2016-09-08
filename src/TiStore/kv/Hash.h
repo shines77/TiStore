@@ -365,8 +365,8 @@ public:
     typedef T hash_type;
 
 private:
-    template <typename U, std::uint32_t MissAlign>
-    inline hash_type decode_value(U const * data) {
+    template <std::uint32_t MissAlign>
+    inline hash_type decode_value(const char * data) {
         // Maybe got a error
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::decode_value(), MissAlign maybe overflow.");
         return 0;
@@ -754,30 +754,30 @@ public:
 
         PrimaryHash<T, sizeof(hash_type)> primaryHash_;
         if (missalign == 0) {
-            return primaryHash_.value<0>(key, len, seed);
+            return primaryHash_.value<0U>(key, len, seed);
         }
         else if (missalign == 1) {
-            return primaryHash_.value<1>(key, len, seed);
+            return primaryHash_.value<1U>(key, len, seed);
         }
         else if (missalign == 2) {
-            return primaryHash_.value<2>(key, len, seed);
+            return primaryHash_.value<2U>(key, len, seed);
         }
         else if (missalign == 3) {
-            return primaryHash_.value<3>(key, len, seed);
+            return primaryHash_.value<3U>(key, len, seed);
         }
         else {
             if (N > 4) {
                 if (missalign == 4) {
-                    return primaryHash_.value<4>(key, len, seed);
+                    return primaryHash_.value<4U>(key, len, seed);
                 }
                 else if (missalign == 5) {
-                    return primaryHash_.value<5>(key, len, seed);
+                    return primaryHash_.value<5U>(key, len, seed);
                 }
                 else if (missalign == 6) {
-                    return primaryHash_.value<6>(key, len, seed);
+                    return primaryHash_.value<6U>(key, len, seed);
                 }
                 else if (missalign == 7) {
-                    return primaryHash_.value<7>(key, len, seed);
+                    return primaryHash_.value<7U>(key, len, seed);
                 }
             }
             else {
