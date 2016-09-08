@@ -365,8 +365,8 @@ public:
     typedef T hash_type;
 
 private:
-    template <std::uint32_t MissAlign, std::uint32_t Dummy = 0>
-    static inline hash_type decode_value(const char * data) {
+    template <typename U, std::uint32_t MissAlign>
+    static inline hash_type decode_value(U const * data) {
         // Maybe got a error
         static_assert(((N == 4) || (N == 8)), "PrimaryHash::decode_value(), MissAlign maybe overflow.");
         return 0;
@@ -388,46 +388,13 @@ public:
 
 private:
     static inline hash_type decode_value_slow(const char * data) {
-        return ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16) | ((hash_type)data[2] << 8) | ((hash_type)data[3]);
+        return ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16)
+             | ((hash_type)data[2] <<  8) | ((hash_type)data[3]);
     }
 
-    template <std::uint32_t MissAlign, std::uint32_t Dummy>
-    static inline hash_type decode_value(const char * data) {
+    template <typename U, std::uint32_t MissAlign>
+    static inline hash_type decode_value(U const * data) {
         return 0;
-    }
-
-    template <std::uint32_t Dummy>
-    static inline hash_type decode_value<0U, Dummy>(const char * data) {
-        assert(data != nullptr);
-        hash_type value = *(hash_type *)(data);
-        return value;
-    }
-
-    template <std::uint32_t Dummy>
-    static inline hash_type decode_value<1U, Dummy>(const char * data) {
-        static const std::uint32_t M = 1;
-        static const hash_type mask = (hash_type)(-1);
-        assert(data != nullptr);
-        hash_type value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U)) | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
-        return value;
-    }
-
-    template <std::uint32_t Dummy>
-    static inline hash_type decode_value<2U, Dummy>(const char * data) {
-        static const std::uint32_t M = 2;
-        static const hash_type mask = (hash_type)(-1);
-        assert(data != nullptr);
-        hash_type value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U)) | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
-        return value;
-    }
-
-    template <std::uint32_t Dummy>
-    static inline hash_type decode_value<3U, Dummy>(const char * data) {
-        static const std::uint32_t M = 3;
-        static const hash_type mask = (hash_type)(-1);
-        assert(data != nullptr);
-        hash_type value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U)) | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
-        return value;
     }
 
 public:
@@ -449,7 +416,7 @@ public:
         // The data address is aligned to sizeof(hash_type) bytes.
         register const char * limit = (const char *)(data + (len & ~(std::size_t)align_mask));
         while (data < limit) {
-            hash_type val = PrimaryHash<T, 4U>::decode_value<MissAlign, 0>(data);
+            hash_type val = PrimaryHash<T, 4U>::template decode_value<char, MissAlign>(data);
             hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
@@ -459,7 +426,7 @@ public:
         if (remain == 0)
             return hash;
         // Filter the extra bits
-        hash_type val = PrimaryHash<T, 4U>::decode_value<MissAlign, 0>(data);
+        hash_type val = PrimaryHash<T, 4U>::template decode_value<char, MissAlign>(data);
         static const hash_type val_mask = (hash_type)(-1);
         val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
         hash += val;
@@ -468,6 +435,59 @@ public:
         return hash;
     }
 };
+
+//
+// GCC error: explicit specialization in non-namespace scope (desperate for help)
+//
+// See: http://stackoverflow.com/questions/5777236/gcc-error-explicit-specialization-in-non-namespace-scope-desperate-for-help
+//
+template <typename T>
+template <>
+typename PrimaryHash<T, 4U>::hash_type
+PrimaryHash<T, 4U>::decode_value<char, 0U>(const char * data) {
+    assert(data != nullptr);
+    hash_type value = *(hash_type *)(data);
+    return value;
+}
+
+template <typename T>
+template <>
+static inline
+typename PrimaryHash<T, 4U>::hash_type
+PrimaryHash<T, 4U>::decode_value<char, 1U>(const char * data) {
+    static const std::uint32_t M = 1;
+    static const hash_type mask = (hash_type)(-1);
+    assert(data != nullptr);
+    hash_type value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U))
+                     | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
+    return value;
+}
+
+template <typename T>
+template <>
+static inline
+typename PrimaryHash<T, 4U>::hash_type
+PrimaryHash<T, 4U>::decode_value<char, 2U>(const char * data) {
+    static const std::uint32_t M = 2;
+    static const hash_type mask = (hash_type)(-1);
+    assert(data != nullptr);
+    hash_type value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U))
+                     | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
+    return value;
+}
+
+template <typename T>
+template <>
+static inline
+typename PrimaryHash<T, 4U>::hash_type
+PrimaryHash<T, 4U>::decode_value<char, 3U>(const char * data) {
+    static const std::uint32_t M = 3;
+    static const hash_type mask = (hash_type)(-1);
+    assert(data != nullptr);
+    hash_type value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U))
+                     | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
+    return value;
+}
 
 template <typename T>
 class PrimaryHash<T, 8U> {
@@ -477,27 +497,22 @@ public:
 
 private:
     static inline hash_type decode_value_slow(const char * data) {
-        hash_type value = ((hash_type)data[0] << 56) | ((hash_type)data[1] << 48) | ((hash_type)data[2] << 40) | ((hash_type)data[3] << 32)
-                        | ((hash_type)data[4] << 24) | ((hash_type)data[5] << 16) | ((hash_type)data[6] <<  8) | ((hash_type)data[7]);
+        hash_type value = ((hash_type)data[0] << 56) | ((hash_type)data[1] << 48)
+                        | ((hash_type)data[2] << 40) | ((hash_type)data[3] << 32)
+                        | ((hash_type)data[4] << 24) | ((hash_type)data[5] << 16)
+                        | ((hash_type)data[6] <<  8) | ((hash_type)data[7]);
         return value;
     }
 
-    template <std::uint32_t MissAlign,  std::uint32_t Dummy>
-    static inline hash_type decode_value(const char * data) {
+    template <typename U, std::uint32_t MissAlign>
+    static inline hash_type decode_value(U const * data) {
         static const std::uint32_t M = MissAlign % N;
         static const hash_type mask = (hash_type)(-1);
         hash_type value;
         assert(MissAlign < N);
         assert(data != nullptr);
-        value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U)) | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
-        return value;
-    }
-
-    template <std::uint32_t Dummy>
-    static inline hash_type decode_value<0U, Dummy>(const char * data) {
-        hash_type value;
-        assert(data != nullptr);
-        value = *(hash_type *)(data);
+        value = ((*(hash_type *)(data - M) & (mask >> (M * 8U))) << (M * 8U))
+               | (*(hash_type *)(data + (N - M)) & (mask >> ((N - M) * 8U)));
         return value;
     }
 
@@ -520,7 +535,7 @@ public:
         // The data address is aligned to sizeof(hash_type) bytes.
         register const char * limit = (const char *)(data + (len & ~(std::size_t)align_mask));
         while (data < limit) {
-            hash_type val = PrimaryHash<T, 8U>::decode_value<MissAlign, 0>(data);
+            hash_type val = PrimaryHash<T, 8U>::template decode_value<char, MissAlign>(data);
             hash += val;
             hash *= m;
             hash ^= (hash >> half_bits);
@@ -530,7 +545,7 @@ public:
         if (remain == 0)
             return hash;
         // Filter the extra bits
-        hash_type val = PrimaryHash<T, 8U>::decode_value<MissAlign, 0>(data);
+        hash_type val = PrimaryHash<T, 8U>::template decode_value<char, MissAlign>(data);
         static const hash_type val_mask = (hash_type)(-1);
         val &= (val_mask >> ((sizeof(hash_type) - remain) * 8));
         hash += val;
@@ -541,9 +556,24 @@ public:
 };
 
 //
+// GCC error: explicit specialization in non-namespace scope (desperate for help)
+//
+// See: http://stackoverflow.com/questions/5777236/gcc-error-explicit-specialization-in-non-namespace-scope-desperate-for-help
+//
+template <typename T>
+template <>
+static inline
+typename PrimaryHash<T, 8U>::hash_type
+PrimaryHash<T, 8U>::decode_value<char, 0U>(const char * data) {
+    hash_type value;
+    assert(data != nullptr);
+    value = *(hash_type *)(data);
+    return value;
+}
+
+//
 // class HashUtils
 //
-
 template <typename T = std::uint32_t>
 class HashUtils {
 public:

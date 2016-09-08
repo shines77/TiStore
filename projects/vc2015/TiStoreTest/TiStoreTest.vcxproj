@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\TiStoreTest\test.cpp" />
     <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp" />
+    <ClCompile Include="..\..\..\src\TiStore\kv\Hash.cpp" />
     <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp" />
   </ItemGroup>
   <ItemGroup>
