@@ -214,31 +214,6 @@ public:
         }
         return true;
     }
-
-    std::uint32_t maybe_match(const Slice & key) {
-        std::uint32_t hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-#if 0
-        printf("key  = %s\n", key.data());
-        printf("hash = %11u (0x%08X)\n", hash, hash);
-        printf("\n");
-#endif
-        return hash;
-    }
-
-    std::uint32_t maybe_match2(const Slice & key) {
-        std::uint32_t hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
-        return hash;
-    }
-
-    std::uint32_t maybe_match_openssl(const Slice & key) {
-        std::uint32_t hash = HashUtils<std::uint32_t>::OpenSSLHash(key.data(), key.size());
-        return hash;
-    }
-
-    std::uint32_t rocksdb_maybe_match(const Slice & key) {
-        std::uint32_t hash = rocksdb::hash::Hash(key.data(), key.size(), kDefaultHashSeed32);
-        return hash;
-    }
 };
 
 //
@@ -415,24 +390,6 @@ public:
                 hash += secondary_hash;
             }
         }
-        return true;
-    }
-};
-
-class BloomFilterFixed {
-private:
-    std::string name_;
-    std::string root_;
-    std::size_t capacity_;
-    std::size_t block_size_;
-
-public:
-    BloomFilterFixed() {};
-    BloomFilterFixed(const char * name) : name_(name), root_(""),
-        capacity_(0), block_size_(0) {}
-    virtual ~BloomFilterFixed() {}
-
-    bool build() {
         return true;
     }
 };

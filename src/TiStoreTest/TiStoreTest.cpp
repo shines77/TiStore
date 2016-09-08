@@ -152,7 +152,7 @@ double getFalsePositiveRate(T const & bloom_filter, int length) {
     return (double)result / 10000.0;
 }
 
-void test_standard_bloomfilter_false_positive_rate()
+void test_bloomfilter_standard_false_positive_rate()
 {
     char buffer[sizeof(int)];
 
@@ -186,8 +186,8 @@ void test_standard_bloomfilter_false_positive_rate()
         // Check false positive rate
         double rate = getFalsePositiveRate(bloomfilter, length);
         if (kVerbose >= 1) {
-            fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d\n",
-                rate * 100.0, length, (int)bloomfilter.getFilterSize());
+            fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d ; used_bits = %d\n",
+                rate * 100.0, length, (int)bloomfilter.getFilterSize(), (int)bloomfilter.getUsedBits());
         }
         if (rate > 0.0125)
             mediocre_filters++;  // Allowed, but not too often
@@ -204,7 +204,7 @@ void test_standard_bloomfilter_false_positive_rate()
     fprintf(stderr, "\n");
 }
 
-void test_full_bloomfilter_false_positive_rate()
+void test_bloomfilter_full_false_positive_rate()
 {
     char buffer[sizeof(int)];
 
@@ -238,8 +238,8 @@ void test_full_bloomfilter_false_positive_rate()
         // Check false positive rate
         double rate = getFalsePositiveRate(bloomfilter, length);
         if (kVerbose >= 1) {
-            fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d\n",
-                rate * 100.0, length, (int)bloomfilter.getFilterSize());
+            fprintf(stderr, "False positive rates: %5.2f%% @ length = %6d ; bytes = %6d ; used_bits = %d\n",
+                rate * 100.0, length, (int)bloomfilter.getFilterSize(), (int)bloomfilter.getUsedBits());
         }
         if (rate > 0.0125)
             mediocre_filters++;  // Allowed, but not too often
@@ -263,13 +263,13 @@ void test_bloomfilter()
 
     stop_watch sw;
     sw.start();
-    test_standard_bloomfilter_false_positive_rate();
+    test_bloomfilter_standard_false_positive_rate();
     sw.stop();
 
     printf("time spent: %0.3f ms.\n\n", sw.getElapsedMillisec());
 
     sw.start();
-    test_full_bloomfilter_false_positive_rate();
+    test_bloomfilter_full_false_positive_rate();
     sw.stop();
 
     printf("time spent: %0.3f ms.\n\n", sw.getElapsedMillisec());

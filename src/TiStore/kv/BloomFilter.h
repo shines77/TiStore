@@ -37,6 +37,13 @@ namespace TiStore {
 // See: http://www.yebangyu.org/blog/2016/01/29/insidethebloomfilter/
 //
 
+static const unsigned char BitsSetTable256[256] = {
+#define B2(n)     n,     n+1,     n+1,     n+2
+#define B4(n)  B2(n), B2(n+1), B2(n+1), B2(n+2)
+#define B6(n)  B4(n), B4(n+1), B4(n+1), B4(n+2)
+        B6(0), B6(1), B6(1),   B6(2)
+};
+
 namespace detail {
 
 static inline
@@ -78,23 +85,30 @@ private:
     bool verbose_;
 
 public:
+    StandardBloomFilter() :
+        bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
+        num_total_keys_(0), bits_per_key_(0), verbose_(false) {
+    }
+
     StandardBloomFilter(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true)
         : bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
           num_total_keys_(num_total_keys), bits_per_key_(bits_per_key), verbose_(verbose) {
         initFilter(num_total_keys, bits_per_key);
     }
+
     ~StandardBloomFilter() {}
 
 private:
     void initFilter(std::size_t num_total_keys, std::size_t bits_per_key) noexcept {
         bits_per_key_ = bits_per_key;
-        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69);
+        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69 * 0.5);
         if (num_probes_ < 1)
             num_probes_ = 1;
         if (num_probes_ > 30)
             num_probes_ = 30;
-        std::size_t bytes = num_total_keys * bits_per_key / num_probes_;
-        bytes = BITS_ALIGNED_TO(bytes, CACHE_LINE_SIZE);
+        std::size_t bytes = num_total_keys * bits_per_key / num_probes_ + 1;
+        //bytes = BITS_ALIGNED_TO(bytes, CACHE_LINE_SIZE);
+        bytes = BITS_ALIGNED_TO(bytes, 8) + 13;
         bytes_per_probe_ = bytes;
         bits_per_probe_ = bytes * 8;
         
@@ -109,7 +123,8 @@ private:
                     bytes_per_probe_, num_probes_);
         }
 
-        bytes_total_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, CACHE_LINE_SIZE);
+        //bytes_total_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, CACHE_LINE_SIZE);
+        bytes_total_ = ALIGNED_TO(bytes_per_probe_ * num_probes_, 8);
         if (getVerbose()) {
             // Alloc information
             printf("size_of_bitmap      = %zu bytes\n", bytes_total_);
@@ -118,7 +133,8 @@ private:
             printf("total_keys_capacity = %zu keys\n"
                    "bits_per_key        = %0.3f\n",
                    (std::size_t)((double)bits_per_probe_ * 0.69),
-                   (double)(bytes_total_ * 8) / ((double)bits_per_probe_ * 0.69));
+                   /*(double)(bytes_total_ * 8) / ((double)bits_per_probe_ * 0.69*/
+                   (double)(bits_per_probe_ * num_probes_) / (double)num_total_keys);
         }
         alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char [bytes_total_];
         if (new_bitmap) {
@@ -152,6 +168,28 @@ public:
             assert(bytes_total_ != 0);
             ::memset((void *)bitmap, 0, bytes_total_ * sizeof(unsigned char));
         }
+    }
+
+    std::size_t getUsedBits() const {
+        std::size_t total_used = 0;
+        std::size_t probe_used;
+        unsigned char * bitmap = bitmap_.get();
+        unsigned char * cur;
+        //printf("| ");
+        for (int k = 0; k < num_probes_; k++) {
+            cur = bitmap + bytes_per_probe_ * k;
+            probe_used = 0;
+            for (int n = 0; n < bytes_per_probe_; n++) {
+                std::size_t bits = BitsSetTable256[*cur];
+                probe_used += bits;
+                total_used += bits;
+                cur++;
+            }
+            //printf("probe = %d, probe_bits_use = %zu\n", k, probe_used);
+            //printf("%zu | ", probe_used);
+        }
+        //printf("\n");
+        return total_used;
     }
 
     // StandardBloomFilter
@@ -195,7 +233,7 @@ public:
     // StandardBloomFilter
     void addKey(const Slice & key) {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 0);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(0, bit_pos);
         if (num_probes_ > 1) {
@@ -203,7 +241,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 0);
+                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
                 setBit(i, bit_pos);
                 hash += secondary_hash;
             }
@@ -215,7 +253,7 @@ public:
     // StandardBloomFilter
     bool maybeMatch(const Slice & key) const {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 0);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = insideBitmap(0, bit_pos);
         if (!isMatch)
@@ -225,7 +263,7 @@ public:
             secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
-                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 0);
+                bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
                 isMatch = insideBitmap(i, bit_pos);
                 if (!isMatch)
                     return false;
@@ -283,12 +321,19 @@ private:
     bool verbose_;
 
 public:
+    FullBloomFilter() :
+        bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
+        bytes_total_(0), num_total_keys_(0), bits_per_key_(0),
+        verbose_(false) {
+    }
+
     FullBloomFilter(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true)
         : bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
           bytes_total_(0), num_total_keys_(num_total_keys), bits_per_key_(bits_per_key),
           verbose_(verbose) {
         initFilter(num_total_keys, bits_per_key);
     }
+
     ~FullBloomFilter() {}
 
 private:
@@ -300,8 +345,9 @@ private:
         if (num_probes_ > 30)
             num_probes_ = 30;
 
-        std::size_t bytes = (num_total_keys * bits_per_key + 7) / 8;
-        bytes_total_ = ALIGNED_TO(bytes, CACHE_LINE_SIZE);
+        std::size_t bytes = (num_total_keys * bits_per_key + 7) / 8 + 1;
+        //bytes_total_ = ALIGNED_TO(bytes, CACHE_LINE_SIZE);
+        bytes_total_ = ALIGNED_TO(bytes, 8) + 13;
         bits_total_ = bytes_total_ * 8;
 
         bytes_per_probe_ = (bytes_total_ / num_probes_) + 1;
@@ -321,8 +367,8 @@ private:
             // The maximum capacity of the ideal number of key.
             printf("total_keys_capacity = %zu keys\n"
                    "bits_per_key        = %0.3f\n",
-                   (std::size_t)((double)(bytes_per_probe_ * 8) * 0.69),
-                   (double)(bits_total_) / ((double)(bytes_per_probe_ * 8) * 0.69));
+                   (std::size_t)((double)(bits_total_) * 0.69 / (double)(num_probes_)),
+                   (double)(bits_total_) / (double)(num_total_keys));
         }
         alignas(8) unsigned char * new_bitmap = new (std::nothrow) unsigned char[bytes_total_];
         if (new_bitmap) {
@@ -356,6 +402,17 @@ public:
             assert(bytes_total_ != 0);
             ::memset((void *)bitmap, 0, bytes_total_ * sizeof(unsigned char));
         }
+    }
+
+    std::size_t getUsedBits() const {
+        std::size_t total_used = 0;
+        unsigned char * cur = bitmap_.get();
+        for (int n = 0; n < bytes_total_; n++) {
+            std::size_t bits = BitsSetTable256[*cur];
+            total_used += bits;
+            cur++;
+        }
+        return total_used;
     }
 
     // FullBloomFilter
@@ -396,7 +453,7 @@ public:
     // FullBloomFilter
     void addKey(const Slice & key) {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 1);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(bit_pos);
         if (num_probes_ > 1) {
@@ -416,7 +473,7 @@ public:
     // FullBloomFilter
     bool maybeMatch(const Slice & key) const {
         std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
-        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 1);
+        std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = insideBitmap(bit_pos);
         if (!isMatch)
