@@ -387,14 +387,14 @@ public:
     static const std::uint32_t N = sizeof(T);
 
 private:
-    static inline hash_type decode_value_slow(const char * data) {
+    static inline hash_type decode_value_generic(const char * data) {
         return ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16)
              | ((hash_type)data[2] <<  8) | ((hash_type)data[3]);
     }
 
     template <typename U, std::uint32_t MissAlign>
     static inline hash_type decode_value(U const * data) {
-        return 0;
+        return decode_value_generic(data);
     }
 
 public:
@@ -441,20 +441,21 @@ public:
 //
 // See: http://stackoverflow.com/questions/5777236/gcc-error-explicit-specialization-in-non-namespace-scope-desperate-for-help
 //
-template <typename T>
 template <>
-typename PrimaryHash<T, 4U>::hash_type
-PrimaryHash<T, 4U>::decode_value<char, 0U>(const char * data) {
+template <>
+static inline
+typename PrimaryHash<std::uint32_t, 4U>::hash_type
+PrimaryHash<std::uint32_t, 4U>::decode_value<char, 0U>(const char * data) {
     assert(data != nullptr);
     hash_type value = *(hash_type *)(data);
     return value;
 }
 
-template <typename T>
+template <>
 template <>
 static inline
-typename PrimaryHash<T, 4U>::hash_type
-PrimaryHash<T, 4U>::decode_value<char, 1U>(const char * data) {
+typename PrimaryHash<std::uint32_t, 4U>::hash_type
+PrimaryHash<std::uint32_t, 4U>::decode_value<char, 1U>(const char * data) {
     static const std::uint32_t M = 1;
     static const hash_type mask = (hash_type)(-1);
     assert(data != nullptr);
@@ -463,11 +464,11 @@ PrimaryHash<T, 4U>::decode_value<char, 1U>(const char * data) {
     return value;
 }
 
-template <typename T>
+template <>
 template <>
 static inline
-typename PrimaryHash<T, 4U>::hash_type
-PrimaryHash<T, 4U>::decode_value<char, 2U>(const char * data) {
+typename PrimaryHash<std::uint32_t, 4U>::hash_type
+PrimaryHash<std::uint32_t, 4U>::decode_value<char, 2U>(const char * data) {
     static const std::uint32_t M = 2;
     static const hash_type mask = (hash_type)(-1);
     assert(data != nullptr);
@@ -476,11 +477,11 @@ PrimaryHash<T, 4U>::decode_value<char, 2U>(const char * data) {
     return value;
 }
 
-template <typename T>
+template <>
 template <>
 static inline
-typename PrimaryHash<T, 4U>::hash_type
-PrimaryHash<T, 4U>::decode_value<char, 3U>(const char * data) {
+typename PrimaryHash<std::uint32_t, 4U>::hash_type
+PrimaryHash<std::uint32_t, 4U>::decode_value<char, 3U>(const char * data) {
     static const std::uint32_t M = 3;
     static const hash_type mask = (hash_type)(-1);
     assert(data != nullptr);
@@ -496,7 +497,7 @@ public:
     static const std::uint32_t N = sizeof(T);
 
 private:
-    static inline hash_type decode_value_slow(const char * data) {
+    static inline hash_type decode_value_generic(const char * data) {
         hash_type value = ((hash_type)data[0] << 56) | ((hash_type)data[1] << 48)
                         | ((hash_type)data[2] << 40) | ((hash_type)data[3] << 32)
                         | ((hash_type)data[4] << 24) | ((hash_type)data[5] << 16)
@@ -560,11 +561,44 @@ public:
 //
 // See: http://stackoverflow.com/questions/5777236/gcc-error-explicit-specialization-in-non-namespace-scope-desperate-for-help
 //
-template <typename T>
+template <>
 template <>
 static inline
-typename PrimaryHash<T, 8U>::hash_type
-PrimaryHash<T, 8U>::decode_value<char, 0U>(const char * data) {
+typename PrimaryHash<std::uint32_t, 8U>::hash_type
+PrimaryHash<std::uint32_t, 8U>::decode_value<char, 0U>(char const * data) {
+    hash_type value;
+    assert(data != nullptr);
+    value = *(hash_type *)(data);
+    return value;
+}
+
+template <>
+template <>
+static inline
+typename PrimaryHash<std::int32_t, 8U>::hash_type
+PrimaryHash<std::int32_t, 8U>::decode_value<char, 0U>(char const * data) {
+    hash_type value;
+    assert(data != nullptr);
+    value = *(hash_type *)(data);
+    return value;
+}
+
+template <>
+template <>
+static inline
+typename PrimaryHash<std::uint64_t, 8U>::hash_type
+PrimaryHash<std::uint64_t, 8U>::decode_value<char, 0U>(char const * data) {
+    hash_type value;
+    assert(data != nullptr);
+    value = *(hash_type *)(data);
+    return value;
+}
+
+template <>
+template <>
+static inline
+typename PrimaryHash<std::int64_t, 8U>::hash_type
+PrimaryHash<std::int64_t, 8U>::decode_value<char, 0U>(char const * data) {
     hash_type value;
     assert(data != nullptr);
     value = *(hash_type *)(data);
