@@ -26,14 +26,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp">
-      <Filter>src\TiStore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\TiStoreTest\test.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp">
+      <Filter>src\TiStore</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
