@@ -623,73 +623,6 @@ public:
         return 0;
     }
 
-    template <>
-    inline hash_type decodeValue<4U>(const char * data, std::uint32_t missalign) const {
-        static const std::size_t N = 4;
-        static const hash_type mask = (hash_type)(-1);
-        hash_type value;
-        assert(missalign < N);
-        assert(data != nullptr);
-#if 1
-        value = ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16) | ((hash_type)data[2] << 8) | ((hash_type)data[3]);
-#else
-        if (missalign == 1) {
-            value = ((*(hash_type *)(data - 1) & (mask >> (1 * 8U))) << 8U) | (*(hash_type *)(data + (N - 1)) & (mask >> ((N - 1) * 8U)));
-        }
-        else if (missalign == 2) {
-            value = ((*(hash_type *)(data - 2) & (mask >> (2 * 8U))) << 16U) | (*(hash_type *)(data + (N - 2)) & (mask >> ((N - 2) * 8U)));
-        }
-        else if (missalign == 3) {
-            value = ((*(hash_type *)(data - 3) & (mask >> (3 * 8U))) << 24U) | (*(hash_type *)(data + (N - 3)) & (mask >> ((N - 3) * 8U)));
-        }
-        else {
-            // TODO: Error?
-            value = 0;
-        }
-#endif
-        return value;
-    }
-
-    template <>
-    inline hash_type decodeValue<8U>(const char * data, std::uint32_t missalign) const {
-        static const std::size_t N = 8;
-        static const hash_type mask = (hash_type)(-1);
-        hash_type value;
-        assert(missalign < N);
-        assert(data != nullptr);
-#if 1
-        value = ((hash_type)data[0] << 56) | ((hash_type)data[1] << 48) | ((hash_type)data[2] << 40) | ((hash_type)data[3] << 32)
-              | ((hash_type)data[4] << 24) | ((hash_type)data[5] << 16) | ((hash_type)data[6] <<  8) | ((hash_type)data[7]);
-#else
-        if (missalign == 1) {
-            value = ((*(hash_type *)(data - 1) & (mask >> (1 * 8U))) <<  8U) | (*(hash_type *)(data + (N - 1)) & (mask >> ((N - 1) * 8U)));
-        }
-        else if (missalign == 2) {
-            value = ((*(hash_type *)(data - 2) & (mask >> (2 * 8U))) << 16U) | (*(hash_type *)(data + (N - 2)) & (mask >> ((N - 2) * 8U)));
-        }
-        else if (missalign == 3) {
-            value = ((*(hash_type *)(data - 3) & (mask >> (3 * 8U))) << 24U) | (*(hash_type *)(data + (N - 3)) & (mask >> ((N - 3) * 8U)));
-        }
-        else if (missalign == 4) {
-            value = ((*(hash_type *)(data - 4) & (mask >> (4 * 8U))) << 32U) | (*(hash_type *)(data + (N - 4)) & (mask >> ((N - 4) * 8U)));
-        }
-        else if (missalign == 5) {
-            value = ((*(hash_type *)(data - 5) & (mask >> (5 * 8U))) << 40U) | (*(hash_type *)(data + (N - 5)) & (mask >> ((N - 5) * 8U)));
-        }
-        else if (missalign == 6) {
-            value = ((*(hash_type *)(data - 6) & (mask >> (6 * 8U))) << 48U) | (*(hash_type *)(data + (N - 6)) & (mask >> ((N - 6) * 8U)));
-        }
-        else if (missalign == 7) {
-            value = ((*(hash_type *)(data - 7) & (mask >> (7 * 8U))) << 56U) | (*(hash_type *)(data + (N - 7)) & (mask >> ((N - 7) * 8U)));
-        }
-        else {
-            // TODO: Error?
-            value = 0;
-        }
-#endif
-        return value;
-    }
-
     template <std::uint32_t N, std::uint32_t MissAlign>
     inline hash_type decode_value(const char * data) const {
         //static const std::uint32_t N = sizeof(hash_type);
@@ -999,5 +932,76 @@ public:
         return static_cast<hash_type>(hash::OpenSSL_Hash(key, len));
     }
 };
+
+template <>
+template <>
+inline typename HashUtils<std::uint32_t>::hash_type
+HashUtils<std::uint32_t>::decodeValue<4U>(const char * data, std::uint32_t missalign) const {
+    static const std::size_t N = 4;
+    static const hash_type mask = (hash_type)(-1);
+    hash_type value;
+    assert(missalign < N);
+    assert(data != nullptr);
+#if 1
+    value = ((hash_type)data[0] << 24) | ((hash_type)data[1] << 16) | ((hash_type)data[2] << 8) | ((hash_type)data[3]);
+#else
+    if (missalign == 1) {
+        value = ((*(hash_type *)(data - 1) & (mask >> (1 * 8U))) << 8U) | (*(hash_type *)(data + (N - 1)) & (mask >> ((N - 1) * 8U)));
+    }
+    else if (missalign == 2) {
+        value = ((*(hash_type *)(data - 2) & (mask >> (2 * 8U))) << 16U) | (*(hash_type *)(data + (N - 2)) & (mask >> ((N - 2) * 8U)));
+    }
+    else if (missalign == 3) {
+        value = ((*(hash_type *)(data - 3) & (mask >> (3 * 8U))) << 24U) | (*(hash_type *)(data + (N - 3)) & (mask >> ((N - 3) * 8U)));
+    }
+    else {
+        // TODO: Error?
+        value = 0;
+    }
+#endif
+    return value;
+}
+
+template <>
+template <>
+inline typename HashUtils<std::uint64_t>::hash_type
+HashUtils<std::uint64_t>::decodeValue<8U>(const char * data, std::uint32_t missalign) const {
+    static const std::size_t N = 8;
+    static const hash_type mask = (hash_type)(-1);
+    hash_type value;
+    assert(missalign < N);
+    assert(data != nullptr);
+#if 1
+    value = ((hash_type)data[0] << 56) | ((hash_type)data[1] << 48) | ((hash_type)data[2] << 40) | ((hash_type)data[3] << 32)
+          | ((hash_type)data[4] << 24) | ((hash_type)data[5] << 16) | ((hash_type)data[6] <<  8) | ((hash_type)data[7]);
+#else
+    if (missalign == 1) {
+        value = ((*(hash_type *)(data - 1) & (mask >> (1 * 8U))) <<  8U) | (*(hash_type *)(data + (N - 1)) & (mask >> ((N - 1) * 8U)));
+    }
+    else if (missalign == 2) {
+        value = ((*(hash_type *)(data - 2) & (mask >> (2 * 8U))) << 16U) | (*(hash_type *)(data + (N - 2)) & (mask >> ((N - 2) * 8U)));
+    }
+    else if (missalign == 3) {
+        value = ((*(hash_type *)(data - 3) & (mask >> (3 * 8U))) << 24U) | (*(hash_type *)(data + (N - 3)) & (mask >> ((N - 3) * 8U)));
+    }
+    else if (missalign == 4) {
+        value = ((*(hash_type *)(data - 4) & (mask >> (4 * 8U))) << 32U) | (*(hash_type *)(data + (N - 4)) & (mask >> ((N - 4) * 8U)));
+    }
+    else if (missalign == 5) {
+        value = ((*(hash_type *)(data - 5) & (mask >> (5 * 8U))) << 40U) | (*(hash_type *)(data + (N - 5)) & (mask >> ((N - 5) * 8U)));
+    }
+    else if (missalign == 6) {
+        value = ((*(hash_type *)(data - 6) & (mask >> (6 * 8U))) << 48U) | (*(hash_type *)(data + (N - 6)) & (mask >> ((N - 6) * 8U)));
+    }
+    else if (missalign == 7) {
+        value = ((*(hash_type *)(data - 7) & (mask >> (7 * 8U))) << 56U) | (*(hash_type *)(data + (N - 7)) & (mask >> ((N - 7) * 8U)));
+    }
+    else {
+        // TODO: Error?
+        value = 0;
+    }
+#endif
+    return value;
+}
 
 } // namespace TiStore
