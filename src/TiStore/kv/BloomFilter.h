@@ -72,6 +72,7 @@ void get_posinfo(std::uint32_t bit_pos,
 //
 class StandardBloomFilter {
 private:
+    HashUtils<> hashUtils_;
     std::unique_ptr<unsigned char> bitmap_;
 
     std::size_t bytes_per_probe_;
@@ -85,13 +86,13 @@ private:
     bool verbose_;
 
 public:
-    StandardBloomFilter() :
+    StandardBloomFilter() : hashUtils_(),
         bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
         num_total_keys_(0), bits_per_key_(0), verbose_(false) {
     }
 
     StandardBloomFilter(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true)
-        : bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
+        : hashUtils_(), bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
           num_total_keys_(num_total_keys), bits_per_key_(bits_per_key), verbose_(verbose) {
         initFilter(num_total_keys, bits_per_key);
     }
@@ -232,13 +233,13 @@ public:
 
     // StandardBloomFilter
     void addKey(const Slice & key) {
-        std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
+        std::uint32_t primary_hash = hashUtils_.primaryHash(key.data(), key.size(), kDefaultHashSeed);
         std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(0, bit_pos);
         if (num_probes_ > 1) {
             std::uint32_t secondary_hash, hash;
-            secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
+            secondary_hash = hashUtils_.secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
                 bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
@@ -252,7 +253,7 @@ public:
 
     // StandardBloomFilter
     bool maybeMatch(const Slice & key) const {
-        std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
+        std::uint32_t primary_hash = hashUtils_.primaryHash(key.data(), key.size(), kDefaultHashSeed);
         std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_per_probe_ - 1);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = insideBitmap(0, bit_pos);
@@ -260,7 +261,7 @@ public:
             return false;
         if (num_probes_ > 1) {
             std::uint32_t secondary_hash, hash;
-            secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
+            secondary_hash = hashUtils_.secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
                 bit_pos = hash % ((std::uint32_t)bits_per_probe_ - 1);
@@ -274,7 +275,7 @@ public:
     }
 
     std::uint32_t maybe_match(const Slice & key) {
-        std::uint32_t hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
+        std::uint32_t hash = hashUtils_.primaryHash(key.data(), key.size(), kDefaultHashSeed);
 #if 0
         printf("key  = %s\n", key.data());
         printf("hash = %11u (0x%08X)\n", hash, hash);
@@ -284,16 +285,16 @@ public:
     }
 
     std::uint32_t maybe_match2(const Slice & key) {
-        std::uint32_t hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
+        std::uint32_t hash = hashUtils_.secondaryHash(key.data(), key.size());
         return hash;
     }
 
     std::uint32_t maybe_match_openssl(const Slice & key) {
-        std::uint32_t hash = HashUtils<std::uint32_t>::OpenSSLHash(key.data(), key.size());
+        std::uint32_t hash = hashUtils_.OpenSSLHash(key.data(), key.size());
         return hash;
     }
 
-    std::uint32_t rocksdb_maybe_match(const Slice & key) {
+    static std::uint32_t rocksdb_maybe_match(const Slice & key) {
         std::uint32_t hash = rocksdb::hash::Hash(key.data(), key.size(), kDefaultHashSeed32);
         return hash;
     }
@@ -308,6 +309,7 @@ public:
 //
 class FullBloomFilter {
 private:
+    HashUtils<> hashUtils_;
     std::unique_ptr<unsigned char> bitmap_;
 
     std::size_t bits_total_;
@@ -321,14 +323,14 @@ private:
     bool verbose_;
 
 public:
-    FullBloomFilter() :
+    FullBloomFilter() : hashUtils_(),
         bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
         bytes_total_(0), num_total_keys_(0), bits_per_key_(0),
         verbose_(false) {
     }
 
     FullBloomFilter(std::size_t num_total_keys, std::size_t bits_per_key, bool verbose = true)
-        : bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
+        : hashUtils_(), bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
           bytes_total_(0), num_total_keys_(num_total_keys), bits_per_key_(bits_per_key),
           verbose_(verbose) {
         initFilter(num_total_keys, bits_per_key);
@@ -452,13 +454,13 @@ public:
 
     // FullBloomFilter
     void addKey(const Slice & key) {
-        std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
+        std::uint32_t primary_hash = hashUtils_.primaryHash(key.data(), key.size(), kDefaultHashSeed);
         std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
         setBit(bit_pos);
         if (num_probes_ > 1) {
             std::uint32_t secondary_hash, hash;
-            secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
+            secondary_hash = hashUtils_.secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
                 bit_pos = hash % ((std::uint32_t)bits_total_ - 0);
@@ -472,7 +474,7 @@ public:
 
     // FullBloomFilter
     bool maybeMatch(const Slice & key) const {
-        std::uint32_t primary_hash = HashUtils<std::uint32_t>::primaryHash(key.data(), key.size(), kDefaultHashSeed);
+        std::uint32_t primary_hash = hashUtils_.primaryHash(key.data(), key.size(), kDefaultHashSeed);
         std::uint32_t bit_pos = primary_hash % ((std::uint32_t)bits_total_ - 0);
         // Note: 0 is first probe index, it's primary_hash function.
         bool isMatch = insideBitmap(bit_pos);
@@ -480,7 +482,7 @@ public:
             return false;
         if (num_probes_ > 1) {
             std::uint32_t secondary_hash, hash;
-            secondary_hash = HashUtils<std::uint32_t>::secondaryHash(key.data(), key.size());
+            secondary_hash = hashUtils_.secondaryHash(key.data(), key.size());
             hash = secondary_hash;
             for (int i = 1; i < (int)num_probes_; ++i) {
                 bit_pos = hash % ((std::uint32_t)bits_total_ - 0);

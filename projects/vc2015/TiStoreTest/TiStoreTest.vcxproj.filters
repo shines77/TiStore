@@ -35,9 +35,6 @@
     <ClCompile Include="..\..\..\src\TiStore\TiFS.cpp">
       <Filter>src\TiStore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\TiStore\kv\Hash.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\TiStore\TiStore.h">

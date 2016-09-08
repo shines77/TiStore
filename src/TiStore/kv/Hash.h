@@ -613,15 +613,18 @@ class HashUtils {
 public:
     typedef T hash_type;
 
+    HashUtils() {}
+    ~HashUtils() {}
+
     template <std::uint32_t N>
-    static inline hash_type decodeValue(const char * data, std::uint32_t missalign) {
+    inline hash_type decodeValue(const char * data, std::uint32_t missalign) const {
         assert(missalign < N);
         assert(data != nullptr);
         return 0;
     }
 
     template <>
-    static inline hash_type decodeValue<4U>(const char * data, std::uint32_t missalign) {
+    inline hash_type decodeValue<4U>(const char * data, std::uint32_t missalign) const {
         static const std::size_t N = 4;
         static const hash_type mask = (hash_type)(-1);
         hash_type value;
@@ -648,7 +651,7 @@ public:
     }
 
     template <>
-    static inline hash_type decodeValue<8U>(const char * data, std::uint32_t missalign) {
+    inline hash_type decodeValue<8U>(const char * data, std::uint32_t missalign) const {
         static const std::size_t N = 8;
         static const hash_type mask = (hash_type)(-1);
         hash_type value;
@@ -688,7 +691,7 @@ public:
     }
 
     template <std::uint32_t N, std::uint32_t MissAlign>
-    static inline hash_type decode_value(const char * data) {
+    inline hash_type decode_value(const char * data) const {
         //static const std::uint32_t N = sizeof(hash_type);
         static const std::uint32_t M = MissAlign % N;
         static const hash_type mask = (hash_type)(-1);
@@ -728,7 +731,7 @@ public:
         return value;
     }
 
-    static hash_type primaryHash_align(const char * key, std::size_t len, std::size_t seed) {
+    hash_type primaryHash_align(const char * key, std::size_t len, std::size_t seed) const {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -765,7 +768,7 @@ public:
     }
 
     template <std::uint32_t MissAlign>
-    static hash_type primaryHash_unalign(const char * key, std::size_t len, std::size_t seed) {
+    hash_type primaryHash_unalign(const char * key, std::size_t len, std::size_t seed) const {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -804,7 +807,7 @@ public:
 #undef _IS_X86_64_
 #undef _IS_X86_32_
 
-    static hash_type primaryHash(const char * key, std::size_t len, std::size_t seed) {
+    hash_type primaryHash(const char * key, std::size_t len, std::size_t seed) const {
         static const std::uint32_t N = sizeof(hash_type);
         static const std::uint32_t align_mask = sizeof(hash_type) - 1;
 
@@ -813,34 +816,35 @@ public:
 #if defined(_IS_X86_64_) || defined(_IS_X86_32_)
         return primaryHash_align(key, len, seed);
 #else
-        std::uint32_t missalign = static_cast<std::uint32_t>(reinterpret_cast<std::size_t>(key))
-                                    & align_mask;
-        PrimaryHash<T, sizeof(hash_type)> primaryHash;
+        std::uint32_t missalign =
+            static_cast<std::uint32_t>(reinterpret_cast<std::size_t>(key)) & align_mask;
+
+        PrimaryHash<T, sizeof(hash_type)> primaryHash_;
         if (missalign == 0) {
-            return primaryHash.value<0>(key, len, seed);
+            return primaryHash_.value<0>(key, len, seed);
         }
         else if (missalign == 1) {
-            return primaryHash.value<1>(key, len, seed);
+            return primaryHash_.value<1>(key, len, seed);
         }
         else if (missalign == 2) {
-            return primaryHash.value<2>(key, len, seed);
+            return primaryHash_.value<2>(key, len, seed);
         }
         else if (missalign == 3) {
-            return primaryHash.value<3>(key, len, seed);
+            return primaryHash_.value<3>(key, len, seed);
         }
         else {
             if (N > 4) {
                 if (missalign == 4) {
-                    return primaryHash.value<4>(key, len, seed);
+                    return primaryHash_.value<4>(key, len, seed);
                 }
                 else if (missalign == 5) {
-                    return primaryHash.value<5>(key, len, seed);
+                    return primaryHash_.value<5>(key, len, seed);
                 }
                 else if (missalign == 6) {
-                    return primaryHash.value<6>(key, len, seed);
+                    return primaryHash_.value<6>(key, len, seed);
                 }
                 else if (missalign == 7) {
-                    return primaryHash.value<7>(key, len, seed);
+                    return primaryHash_.value<7>(key, len, seed);
                 }
             }
             else {
@@ -853,7 +857,7 @@ public:
 #endif
     }
 
-    static hash_type primaryHash_new(const char * key, std::size_t len, std::size_t seed) {
+    hash_type primaryHash_new(const char * key, std::size_t len, std::size_t seed) const {
         static const std::uint32_t N = sizeof(hash_type);
         static const std::uint32_t align_mask = sizeof(hash_type) - 1;
 
@@ -898,7 +902,7 @@ public:
 #endif
     }
 
-    static hash_type primaryHash_old(const char * key, std::size_t len, std::size_t seed) {
+    hash_type primaryHash_old(const char * key, std::size_t len, std::size_t seed) const {
         // Similar to murmur hash
         static const std::size_t _m = kHashInitValue_M;
         static const std::uint32_t half_bits = sizeof(hash_type) * 8 / 2;
@@ -964,30 +968,34 @@ public:
 #endif
     }
 
-    static hash_type primaryHash(const Slice & key, std::size_t seed) {
+    /*
+    hash_type primaryHash(const Slice & key, std::size_t seed) {
         return primaryHash(key.data(), key.size(), seed);
     }
 
     template <std::size_t N>
-    static hash_type primaryHash(const char (&key)[N], std::size_t seed) {
+    hash_type primaryHash(const char (&key)[N], std::size_t seed) {
         return primaryHash(key, N, seed);
     }
+    //*/
 
-    static hash_type secondaryHash(const char * key, std::size_t len) {
+    hash_type secondaryHash(const char * key, std::size_t len) const {
         //return static_cast<hash_type>(hash::OpenSSL_Hash(key, len));
         return static_cast<hash_type>(hash::Times31(key, len));
     }
 
-    static hash_type secondaryHash(const Slice & key) {
+    ///*
+    hash_type secondaryHash(const Slice & key) const {
         return secondaryHash(key.data(), key.size());
     }
 
     template <std::size_t N>
-    static hash_type secondaryHash(const char (&key)[N]) {
+    hash_type secondaryHash(const char (&key)[N]) const {
         return secondaryHash(key, N);
     }
+    //*/
 
-    static hash_type OpenSSLHash(const char * key, std::size_t len) {
+    hash_type OpenSSLHash(const char * key, std::size_t len) const {
         return static_cast<hash_type>(hash::OpenSSL_Hash(key, len));
     }
 };
