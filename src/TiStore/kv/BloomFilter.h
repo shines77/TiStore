@@ -86,7 +86,7 @@ private:
     bool verbose_;
 
 public:
-    StandardBloomFilter() : hashUtils_(),
+    StandardBloomFilter() :
         bytes_per_probe_(0), bits_per_probe_(0), num_probes_(0), bytes_total_(0),
         num_total_keys_(0), bits_per_key_(0), verbose_(false) {
     }
@@ -102,7 +102,7 @@ public:
 private:
     void initFilter(std::size_t num_total_keys, std::size_t bits_per_key) noexcept {
         bits_per_key_ = bits_per_key;
-        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69 * 0.6);
+        num_probes_ = static_cast<std::size_t>((double)bits_per_key * 0.69 * 0.8);
         if (num_probes_ < 1)
             num_probes_ = 1;
         if (num_probes_ > 30)
@@ -323,7 +323,7 @@ private:
     bool verbose_;
 
 public:
-    FullBloomFilter() : hashUtils_(),
+    FullBloomFilter() :
         bits_total_(0), num_probes_(0), bytes_per_probe_(0), 
         bytes_total_(0), num_total_keys_(0), bits_per_key_(0),
         verbose_(false) {
