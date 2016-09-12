@@ -438,8 +438,10 @@ public:
 
 //
 // GCC error: explicit specialization in non-namespace scope (desperate for help)
-//
 // See: http://stackoverflow.com/questions/5777236/gcc-error-explicit-specialization-in-non-namespace-scope-desperate-for-help
+//
+// Why is partial specialziation of a nested class template allowed, while complete isn't?
+// See: http://stackoverflow.com/questions/2537716/why-is-partial-specialziation-of-a-nested-class-template-allowed-while-complete
 //
 template <>
 template <>
@@ -558,7 +560,6 @@ public:
 
 //
 // GCC error: explicit specialization in non-namespace scope (desperate for help)
-//
 // See: http://stackoverflow.com/questions/5777236/gcc-error-explicit-specialization-in-non-namespace-scope-desperate-for-help
 //
 template <>
@@ -575,30 +576,8 @@ PrimaryHash<std::uint32_t, 8U>::decode_value<0U>(char const * data) {
 template <>
 template <>
 inline
-typename PrimaryHash<std::int32_t, 8U>::hash_type
-PrimaryHash<std::int32_t, 8U>::decode_value<0U>(char const * data) {
-    hash_type value;
-    assert(data != nullptr);
-    value = *(hash_type *)(data);
-    return value;
-}
-
-template <>
-template <>
-inline
 typename PrimaryHash<std::uint64_t, 8U>::hash_type
 PrimaryHash<std::uint64_t, 8U>::decode_value<0U>(char const * data) {
-    hash_type value;
-    assert(data != nullptr);
-    value = *(hash_type *)(data);
-    return value;
-}
-
-template <>
-template <>
-inline
-typename PrimaryHash<std::int64_t, 8U>::hash_type
-PrimaryHash<std::int64_t, 8U>::decode_value<0U>(char const * data) {
     hash_type value;
     assert(data != nullptr);
     value = *(hash_type *)(data);
