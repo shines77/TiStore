@@ -295,7 +295,8 @@ int main(int argc, char * argv[])
     SkipList<Slice &, 16> skipList;
     skipList.build();
 
-    test_traist();
+    test_property();
+    //test_traist();
 
     //test_bloomfilter();
     //test_typeinfo_module();

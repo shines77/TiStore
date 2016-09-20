@@ -1,10 +1,11 @@
 
 #include "test.h"
 
+#include "TiStore/traits.h"
 #include "TiStore/lang/TypeInfo.h"
 #include "TiStore/kv/BloomFilter.h"
 #include "TiStore/kv/BloomFilterFixed.h"
-#include "TiStore/traits.h"
+#include "TiStore/lang/Property.h"
 
 #include <stdio.h>
 
@@ -35,6 +36,39 @@ void test_typeinfo_module()
     printf("TypeInfo<StandardBloomFilter<128, 4>>::hash_code()  = 0x%08X\n", TiStore::TypeInfo<StandardBloomFilterFixed<128, 4>>::hash_code());
     printf("TypeInfo<char>::hash_code()                         = 0x%08X\n", TiStore::TypeInfo<char>::hash_code());
     printf("\n");
+}
+
+class Test {
+public:
+    Test() : width(this, 1.0f)/*, width_(0.0f)*/ {}
+    ~Test() {}
+
+    const float getWidth() const { return width_; }
+    void setWidth(const float & value) { width_ = value; }
+
+    int dummy;
+    double reserve;
+    Property<float, Test, &Test::getWidth, &Test::setWidth> width;
+
+private:
+    float width_;
+};
+
+template <>
+intptr_t Property<float, Test, &Test::getWidth, &Test::setWidth>::property_offset = class_offset_of(Test, width);
+
+void test_property()
+{
+    Test test;
+    std::cout << "sizeof(test.width) = " << sizeof(test.width) << std::endl;
+    std::cout << "test.width = " << test.width << std::endl;
+    std::cout << "test.getWidth() = " << test.getWidth() << std::endl;
+    test.width = 5.0f;
+    std::cout << "test.width = " << test.width << std::endl;
+    std::cout << "test.getWidth() = " << test.getWidth() << std::endl;
+    std::cout << "class_offset_of(Test, width) = " << class_offset_of(Test, width) << std::endl;
+    std::cout << "test.width.get_offset() = " << test.width.get_offset() << std::endl;
+    std::cout << std::endl;
 }
 
 #define REMOVE_CONST_TEST(test_name, test_type, verify_type) \
