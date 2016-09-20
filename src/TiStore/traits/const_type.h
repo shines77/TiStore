@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include "TiStore/basic/stdint.h"
 
 namespace TiStore {
 namespace traits {
