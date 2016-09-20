@@ -278,43 +278,100 @@ void test_bloomfilter()
     printf("time spent: %0.3f ms.\n\n", sw.getElapsedMillisec());
 }
 
-class foo {};
-
 #define REMOVE_CONST_TEST(test_name, test_type, verify_type) \
-    std::cout << #test_name ": " \
+    std::cout << #test_name " " \
               << (traits::is_same<test_type, verify_type>::value ? "passed" : "failed") << ", " \
-              << "typeid("#test_type") = " << typeid(test_type).name() << std::endl
+              << "typeid("#test_type").name() = " << typeid(test_type).name() << std::endl
 
-void test_remove_const_traist()
-{
-    REMOVE_CONST_TEST(type1, traits::remove_const<foo>::type, foo);
-    REMOVE_CONST_TEST(type2, traits::remove_const<foo &>::type, foo &);
-    REMOVE_CONST_TEST(type3, traits::remove_const<const foo>::type, foo);
-    REMOVE_CONST_TEST(type4, traits::remove_const<const foo &>::type, const foo &);
-    REMOVE_CONST_TEST(type5, traits::remove_const<foo *>::type, foo *);
-    REMOVE_CONST_TEST(type6, traits::remove_const<const foo *>::type, foo const *);
-    REMOVE_CONST_TEST(type7, traits::remove_const<foo * const>::type, foo *);
-    REMOVE_CONST_TEST(type8, traits::remove_const<const foo * const>::type, foo const *);
-    std::cout << std::endl;
-}
+class foo {};
 
 void test_std_remove_const_traist()
 {
-    REMOVE_CONST_TEST(type1, std::remove_const<foo>::type, foo);
-    REMOVE_CONST_TEST(type2, std::remove_const<foo &>::type, foo &);
-    REMOVE_CONST_TEST(type3, std::remove_const<const foo>::type, foo);
-    REMOVE_CONST_TEST(type4, std::remove_const<const foo &>::type, const foo &);
-    REMOVE_CONST_TEST(type5, std::remove_const<foo *>::type, foo *);
-    REMOVE_CONST_TEST(type6, std::remove_const<const foo *>::type, foo const *);
-    REMOVE_CONST_TEST(type7, std::remove_const<foo * const>::type, foo *);
-    REMOVE_CONST_TEST(type8, std::remove_const<const foo * const>::type, foo const *);
+    std::cout << "test_std_remove_const_traist()" << std::endl;
+    std::cout << std::endl;
+
+    REMOVE_CONST_TEST(test1, std::remove_const<foo>::type, foo);
+    REMOVE_CONST_TEST(test2, std::remove_const<foo &>::type, foo &);
+    REMOVE_CONST_TEST(test3, std::remove_const<const foo>::type, foo);
+    REMOVE_CONST_TEST(test4, std::remove_const<const foo &>::type, const foo &);
+    REMOVE_CONST_TEST(test5, std::remove_const<foo *>::type, foo *);
+    REMOVE_CONST_TEST(test6, std::remove_const<const foo *>::type, foo const *);
+    REMOVE_CONST_TEST(test7, std::remove_const<foo * const>::type, foo *);
+    REMOVE_CONST_TEST(test8, std::remove_const<const foo * const>::type, foo const *);
+    std::cout << std::endl;
+}
+
+void test_remove_const_traist()
+{
+    std::cout << "test_remove_const_traist()" << std::endl;
+    std::cout << std::endl;
+
+    REMOVE_CONST_TEST(test1, traits::remove_const<foo>::type, foo);
+    REMOVE_CONST_TEST(test2, traits::remove_const<foo &>::type, foo &);
+    REMOVE_CONST_TEST(test3, traits::remove_const<const foo>::type, foo);
+    REMOVE_CONST_TEST(test4, traits::remove_const<const foo &>::type, const foo &);
+    REMOVE_CONST_TEST(test5, traits::remove_const<foo *>::type, foo *);
+    REMOVE_CONST_TEST(test6, traits::remove_const<const foo *>::type, foo const *);
+    REMOVE_CONST_TEST(test7, traits::remove_const<foo * const>::type, foo *);
+    REMOVE_CONST_TEST(test8, traits::remove_const<const foo * const>::type, foo const *);
+    std::cout << std::endl;
+}
+
+void test_std_remove_volatile()
+{
+    typedef std::remove_cv<const int>::type type1;
+    typedef std::remove_cv<volatile int>::type type2;
+    typedef std::remove_cv<const volatile int>::type type3;
+    typedef std::remove_cv<const volatile int*>::type type4;
+    typedef std::remove_cv<int * const volatile>::type type5;
+
+    std::cout << "test_std_remove_volatile()" << std::endl;
+    std::cout << std::endl;
+ 
+    std::cout << "test1 " << (std::is_same<int, type1>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test2 " << (std::is_same<int, type2>::value
+        ? "passed" : "failed") << std::endl;;
+    std::cout << "test3 " << (std::is_same<int, type3>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test4 " << (std::is_same<const volatile int*, type4>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test5 " << (std::is_same<int*, type5>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << std::endl;
+}
+
+void test_remove_volatile()
+{
+    typedef traits::remove_cv<const int>::type type1;
+    typedef traits::remove_cv<volatile int>::type type2;
+    typedef traits::remove_cv<const volatile int>::type type3;
+    typedef traits::remove_cv<const volatile int*>::type type4;
+    typedef traits::remove_cv<int * const volatile>::type type5;
+
+    std::cout << "test_remove_volatile()" << std::endl;
+    std::cout << std::endl;
+ 
+    std::cout << "test1 " << (std::is_same<int, type1>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test2 " << (std::is_same<int, type2>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test3 " << (std::is_same<int, type3>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test4 " << (std::is_same<const volatile int*, type4>::value
+        ? "passed" : "failed") << std::endl;
+    std::cout << "test5 " << (std::is_same<int*, type5>::value
+        ? "passed" : "failed") << std::endl;
     std::cout << std::endl;
 }
 
 void test_traist()
 {
-    test_remove_const_traist();
     test_std_remove_const_traist();
+    test_remove_const_traist();
+
+    test_std_remove_volatile();
+    test_remove_volatile();
 }
 
 int main(int argc, char * argv[])

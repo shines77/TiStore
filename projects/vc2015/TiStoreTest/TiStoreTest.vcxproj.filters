@@ -124,5 +124,11 @@
     <ClInclude Include="..\..\..\src\TiStore\traits.h">
       <Filter>src\TiStore</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\remove_cv.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\remove_volatile.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -190,6 +190,8 @@
     <ClInclude Include="..\..\..\src\TiStore\traits\integral_constant.h" />
     <ClInclude Include="..\..\..\src\TiStore\traits\is_same.h" />
     <ClInclude Include="..\..\..\src\TiStore\traits\remove_const.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\remove_cv.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\remove_volatile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
