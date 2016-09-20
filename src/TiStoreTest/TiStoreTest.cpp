@@ -6,11 +6,14 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
 
 #include "TiStore/TiFS.h"
 #include "TiStore/TiStore.h"
 #include "TiStore/fs/Initor.h"
 #include "TiStore/kv/BloomFilter.h"
+#include "TiStore/kv/SkipList.h"
 #include "TiStore/lang/TypeInfo.h"
 
 #include "stop_watch.h"
@@ -275,6 +278,45 @@ void test_bloomfilter()
     printf("time spent: %0.3f ms.\n\n", sw.getElapsedMillisec());
 }
 
+class foo {};
+
+#define REMOVE_CONST_TEST(test_name, test_type, verify_type) \
+    std::cout << #test_name ": " \
+              << (traits::is_same<test_type, verify_type>::value ? "passed" : "failed") << ", " \
+              << "typeid("#test_type") = " << typeid(test_type).name() << std::endl
+
+void test_remove_const_traist()
+{
+    REMOVE_CONST_TEST(type1, traits::remove_const<foo>::type, foo);
+    REMOVE_CONST_TEST(type2, traits::remove_const<foo &>::type, foo &);
+    REMOVE_CONST_TEST(type3, traits::remove_const<const foo>::type, foo);
+    REMOVE_CONST_TEST(type4, traits::remove_const<const foo &>::type, const foo &);
+    REMOVE_CONST_TEST(type5, traits::remove_const<foo *>::type, foo *);
+    REMOVE_CONST_TEST(type6, traits::remove_const<const foo *>::type, foo const *);
+    REMOVE_CONST_TEST(type7, traits::remove_const<foo * const>::type, foo *);
+    REMOVE_CONST_TEST(type8, traits::remove_const<const foo * const>::type, foo const *);
+    std::cout << std::endl;
+}
+
+void test_std_remove_const_traist()
+{
+    REMOVE_CONST_TEST(type1, std::remove_const<foo>::type, foo);
+    REMOVE_CONST_TEST(type2, std::remove_const<foo &>::type, foo &);
+    REMOVE_CONST_TEST(type3, std::remove_const<const foo>::type, foo);
+    REMOVE_CONST_TEST(type4, std::remove_const<const foo &>::type, const foo &);
+    REMOVE_CONST_TEST(type5, std::remove_const<foo *>::type, foo *);
+    REMOVE_CONST_TEST(type6, std::remove_const<const foo *>::type, foo const *);
+    REMOVE_CONST_TEST(type7, std::remove_const<foo * const>::type, foo *);
+    REMOVE_CONST_TEST(type8, std::remove_const<const foo * const>::type, foo const *);
+    std::cout << std::endl;
+}
+
+void test_traist()
+{
+    test_remove_const_traist();
+    test_std_remove_const_traist();
+}
+
 int main(int argc, char * argv[])
 {
     printf("\n");
@@ -290,7 +332,12 @@ int main(int argc, char * argv[])
     TiStore::fs::File file1("C:\\test.bin");
     file1.close();
 
-    test_bloomfilter();
+    SkipList<Slice &, 16> skipList;
+    skipList.build();
+
+    test_traist();
+
+    //test_bloomfilter();
     //test_typeinfo_module();
 
     //printf("\n");

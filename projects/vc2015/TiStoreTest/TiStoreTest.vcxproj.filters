@@ -24,6 +24,9 @@
     <Filter Include="src\TiStore\lang">
       <UniqueIdentifier>{ef9914cf-990c-451f-81a7-0deacea22237}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TiStore\traits">
+      <UniqueIdentifier>{33107801-2518-447b-a625-bb0cdd88721b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\TiStoreTest\TiStoreTest.cpp">
@@ -96,6 +99,30 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilterFixed.h">
       <Filter>src\TiStore\kv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\kv\SkipList.h">
+      <Filter>src\TiStore\kv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\bool_type.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\const_type.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\is_same.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\remove_const.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\integral_constant.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits\common.h">
+      <Filter>src\TiStore\traits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TiStore\traits.h">
+      <Filter>src\TiStore</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

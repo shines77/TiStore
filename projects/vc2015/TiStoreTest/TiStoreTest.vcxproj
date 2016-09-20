@@ -178,10 +178,18 @@
     <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilter.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\BloomFilterFixed.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\Hash.h" />
+    <ClInclude Include="..\..\..\src\TiStore\kv\SkipList.h" />
     <ClInclude Include="..\..\..\src\TiStore\kv\Slice.h" />
     <ClInclude Include="..\..\..\src\TiStore\lang\TypeInfo.h" />
     <ClInclude Include="..\..\..\src\TiStore\TiFS.h" />
     <ClInclude Include="..\..\..\src\TiStore\TiStore.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\bool_type.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\common.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\const_type.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\integral_constant.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\is_same.h" />
+    <ClInclude Include="..\..\..\src\TiStore\traits\remove_const.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
