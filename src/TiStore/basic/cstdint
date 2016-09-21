@@ -3,6 +3,6 @@
 #include "TiStore/basic/stdint.h"
 
 #include <cstdint>
-#include <cstddef>
+#include <cstddef>  // For std::size_t
 
-#include "TiStore/basic/cstdssize"
+#include "TiStore/basic/cstdssize"  // For std::ssize_t

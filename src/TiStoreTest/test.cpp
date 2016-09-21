@@ -40,32 +40,58 @@ void test_typeinfo_module()
 
 class Test {
 public:
-    Test() : width(this, 1.0f)/*, width_(0.0f)*/ {}
+    Test() : width(2), height(2) /*, width_(0.0f)*/ {}
     ~Test() {}
 
-    const float getWidth() const { return width_; }
-    void setWidth(const float & value) { width_ = value; }
+    const int getWidth() const { return width_; }
+    void setWidth(const int & value) { width_ = value; }
+
+    typedef void * Test::*member_property_ptr;
+
+    static /* constexpr */ member_property_ptr getPropertyOffsetWidth() {
+        return reinterpret_cast<member_property_ptr>(&Test::width);
+    }
 
     int dummy;
     double reserve;
-    Property<float, Test, &Test::getWidth, &Test::setWidth> width;
+    void * property_base;
+    PropertyWithGetSet<int, Test, &Test::getPropertyOffsetWidth, &Test::getWidth, &Test::setWidth> width;
+    Property<int> height;
 
 private:
-    float width_;
+    int width_;
 };
 
 template <>
-intptr_t Property<float, Test, &Test::getWidth, &Test::setWidth>::property_offset = class_offset_of(Test, width);
+intptr_t PropertyWithGetSet<int, Test, &Test::getPropertyOffsetWidth, &Test::getWidth, &Test::setWidth>::s_property_offset = class_offset_of(Test, width);
 
 void test_property()
 {
     Test test;
     std::cout << "sizeof(test.width) = " << sizeof(test.width) << std::endl;
+    std::cout << "sizeof(test.height) = " << sizeof(test.height) << std::endl;
+    std::cout << std::endl;
+
     std::cout << "test.width = " << test.width << std::endl;
     std::cout << "test.getWidth() = " << test.getWidth() << std::endl;
-    test.width = 5.0f;
+    std::cout << "test.height = " << test.height << std::endl;
+    std::cout << "test.height.getter() = " << test.height.getter() << std::endl;
+    std::cout << std::endl;
+
+    test.width = 5;
+    test.height = 5;
     std::cout << "test.width = " << test.width << std::endl;
+    std::cout << "test.height = " << test.height << std::endl;
+    std::cout << std::endl;
+
+    test.width.setter(7);
+    test.height.setter(7);
+    std::cout << "test.width = " << test.width << std::endl;
+    std::cout << "test.width.getter() = " << test.width.getter() << std::endl;
     std::cout << "test.getWidth() = " << test.getWidth() << std::endl;
+    std::cout << "test.height = " << test.height << std::endl;
+    std::cout << std::endl;
+
     std::cout << "class_offset_of(Test, width) = " << class_offset_of(Test, width) << std::endl;
     std::cout << "test.width.get_offset() = " << test.width.get_offset() << std::endl;
     std::cout << std::endl;
