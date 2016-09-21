@@ -43,7 +43,7 @@ public:
     Test() : width(2), height(2) /*, width_(0.0f)*/ {}
     ~Test() {}
 
-    const int getWidth() const { return width_; }
+    int getWidth() const { return width_; }
     void setWidth(const int & value) { width_ = value; }
 
     typedef void * Test::*member_property_ptr;

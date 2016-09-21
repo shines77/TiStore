@@ -46,7 +46,7 @@ public:
     }
     ~Property() {}
 
-    const value_type getter() const {
+    value_type getter() const {
         return value_;
     }
 
@@ -59,7 +59,7 @@ public:
         return *this;
     }
 
-    operator const value_type () {
+    operator value_type const () {
         return getter();
     }
 
@@ -80,7 +80,7 @@ private:
 
 template <typename T, typename Host,
           typename Host::member_property_ptr (*GetPropertyOffsetFunc)(),
-          const T (Host::*Getter)() const,
+          T (Host::*Getter)() const,
           void (Host::*Setter)(T const & value)>
 class PropertyWithGetSet {
 public:
@@ -104,7 +104,7 @@ public:
         return property_offset;
     }
 
-    const value_type getter() const {
+    value_type getter() const {
         assert(Getter != nullptr);
         assert(GetPropertyOffsetFunc != nullptr);
         const intptr_t property_offset = reinterpret_cast<intptr_t>(&((Host *)0->*((*GetPropertyOffsetFunc)())));
@@ -123,7 +123,7 @@ public:
         return *this;
     }
 
-    operator const value_type () {
+    operator value_type const () {
         return getter();
     }
 
@@ -134,7 +134,7 @@ public:
 
 template <typename T, typename Host,
           typename Host::member_property_ptr (*GetPropertyOffsetFunc)(),
-          const T (Host::*Getter)() const,
+          T (Host::*Getter)() const,
           void (Host::*Setter)(const T & value)>
 intptr_t PropertyWithGetSet<T, Host, GetPropertyOffsetFunc, Getter, Setter>::s_property_offset = 0;
 
@@ -142,7 +142,7 @@ template <typename T, typename Host = void,
           //void * Host::*MemberPropertyPtr = nullptr,
           //typename Host::member_ptr (Host::*MemberPropertyPtr)() = nullptr,
           typename Host::member_property_ptr (*GetPropertyOffsetFunc)() = nullptr,
-          const T (Host::*Getter)() const = nullptr,
+          T (Host::*Getter)() const = nullptr,
           void (Host::*Setter)(const T & value) = nullptr>
 class PropertyAdvance {
 public:
@@ -182,7 +182,7 @@ public:
         return property_offset;
     }
 
-    const value_type getter() const {
+    value_type getter() const {
         if (Getter == nullptr) {
             return value_;
         }
@@ -207,7 +207,7 @@ public:
         return *this;
     }
 
-    operator const value_type () {
+    operator value_type const () {
         return getter();
     }
 
@@ -220,7 +220,7 @@ template <typename T, typename Host,
           //void * Host::*MemberPropertyPtr,
           //typename Host::member_ptr (Host::*MemberPropertyPtr)(),
           typename Host::member_property_ptr (*GetPropertyOffsetFunc)(),
-          const T (Host::*Getter)() const,
+          T (Host::*Getter)() const,
           void (Host::*Setter)(const T & value)>
 intptr_t PropertyAdvance<T, Host, GetPropertyOffsetFunc, Getter, Setter>::property_offset = 0; //offsetof(Host, MemberName);
 
