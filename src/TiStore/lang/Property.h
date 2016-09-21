@@ -171,12 +171,12 @@ public:
     intptr_t get_offset() const {
         //intptr_t member_offset = reinterpret_cast<std::intptr_t>(&((Host *)0->*(Host::get_property_offset())));
         const intptr_t member_offset = reinterpret_cast<std::intptr_t>(&((Host *)0->*((*GetPropertyOffsetFunc)())));
-        printf("This              = 0x%p\n", this);
-        printf("MemberPropertyPtr = 0x%p\n", MemberPropertyPtr);
-        printf("member_offset     = %zd\n", member_offset);
-        printf("(Host::*MemberPropertyPtr)() = 0x%p\n",
-            //((reinterpret_cast<Host *>(DOWN_CONST_CAST_THIS(this_type, this) - property_offset))->*MemberPropertyPtr)()
-            (*MemberPropertyPtr)()
+        printf("This                  = 0x%p\n", this);
+        printf("GetPropertyOffsetFunc = 0x%p\n", GetPropertyOffsetFunc);
+        printf("member_offset         = %zd\n", member_offset);
+        printf("(Host::*GetPropertyOffsetFunc)() = 0x%p\n",
+            //((reinterpret_cast<Host *>(DOWN_CONST_CAST_THIS(this_type, this) - property_offset))->*GetPropertyOffsetFunc)()
+            (*GetPropertyOffsetFunc)()
             //Host::get_property_offset()
             );
         return property_offset;
