@@ -20,9 +20,15 @@ namespace TiStore {
 
 //
 // CppCon2015: Effective C++ Implementation of Class Properties
-// See: https://github.com/CppCon/CppCon2015/tree/master/Tutorials/Effective%20C%2B%2B%20Implementation%20of%20Class%20Properties
+//   See: https://github.com/CppCon/CppCon2015/tree/master/Tutorials/Effective%20C%2B%2B%20Implementation%20of%20Class%20Properties
 //
-// Github See: https://github.com/bitekas/properties
+//   Github See: https://github.com/bitekas/properties
+//
+
+//
+// Another:
+//   C++ implementation of the C# Property and Indexer with Accessor-Modifiers, By jeff00seattle
+//   See: http://www.codeproject.com/Articles/33293/C-implementation-of-the-C-Property-and-Indexer-wit
 //
 
 template <typename Host, typename MemberPropertyType>
