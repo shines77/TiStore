@@ -16,8 +16,6 @@
 #define DOWN_CONST_CAST_THIS(this_type, This)   (reinterpret_cast<char *>(const_cast<this_type *>(This)))
 #define DOWN_CAST_THIS(this_type, This)         (reinterpret_cast<char *>(reinterpret_cast<this_type *>(This)))
 
-namespace TiStore {
-
 //
 // CppCon2015: Effective C++ Implementation of Class Properties
 //   See: https://github.com/CppCon/CppCon2015/tree/master/Tutorials/Effective%20C%2B%2B%20Implementation%20of%20Class%20Properties
@@ -26,15 +24,32 @@ namespace TiStore {
 //
 
 //
-// Another:
+// Another implement:
 //   C++ implementation of the C# Property and Indexer with Accessor-Modifiers, By jeff00seattle
 //   See: http://www.codeproject.com/Articles/33293/C-implementation-of-the-C-Property-and-Indexer-wit
 //
+
+namespace TiStore {
 
 template <typename Host, typename MemberPropertyType>
 constexpr std::size_t class_offsetof(MemberPropertyType MemberPropertyPtr) {
     return reinterpret_cast<std::size_t>(&((Host *)0->*MemberPropertyPtr));
 };
+
+//
+// How to calculate offset of a class member at compile time?
+//
+// See: http://stackoverflow.com/questions/13180842/how-to-calculate-offset-of-a-class-member-at-compile-time
+//
+template <typename T, typename U>
+constexpr size_t class_offsetof_cxx11_impl(T const * t, U T::* a) {
+    return (char const *)t - (char const *)&(t->*a) >= 0 ?
+           (char const *)t - (char const *)&(t->*a)      :
+           (char const *)&(t->*a) - (char const *)t;
+}
+
+#define class_offsetof_cxx11(Type_, Attr_)                          \
+    class_offsetof_cxx11_impl((Type_ const *)nullptr, &Type_::Attr_)
 
 template <typename T>
 class Property {
