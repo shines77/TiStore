@@ -38,8 +38,10 @@ constexpr std::size_t class_offsetof(MemberPropertyType MemberPropertyPtr) {
 
 //
 // How to calculate offset of a class member at compile time?
-//
 // See: http://stackoverflow.com/questions/13180842/how-to-calculate-offset-of-a-class-member-at-compile-time
+//
+// Why can't you use offsetof on non-POD structures in C++?
+// See: http://stackoverflow.com/questions/1129894/why-cant-you-use-offsetof-on-non-pod-structures-in-c
 //
 template <typename T, typename U>
 constexpr size_t class_offsetof_cxx11_impl(T const * t, U T::* a) {
