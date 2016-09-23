@@ -5,6 +5,7 @@
 #include "TiStore/lang/TypeInfo.h"
 #include "TiStore/kv/BloomFilter.h"
 #include "TiStore/kv/BloomFilterFixed.h"
+#include "TiStore/kv/SkipList.h"
 #include "TiStore/lang/Property.h"
 
 #include <stdio.h>
@@ -242,4 +243,21 @@ void test_traist()
 
     test_std_remove_cv();
     test_remove_cv();
+}
+
+void test_skiplist()
+{
+    SkipList<Record, 16> skiplist;
+    Record record;
+
+    record.write(Key("/home/skyinno"), Value("TiStore.SkipList.Record"));
+    skiplist.insert(record);
+
+    printf("skiplist.size() = %zu\n", skiplist.sizes());
+
+    skiplist.remove(record);
+    //skiplist.remove(record.key().data());
+    printf("skiplist.size() = %zu\n", skiplist.sizes());
+
+    printf("\n");
 }
