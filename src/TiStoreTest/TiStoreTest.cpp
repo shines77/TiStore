@@ -292,9 +292,6 @@ int main(int argc, char * argv[])
     TiStore::fs::File file1("C:\\test.bin");
     file1.close();
 
-    SkipList<Record, 16> skipList;
-    skipList.build();
-
     test_skiplist();
     test_property();
     //test_traist();

@@ -72,17 +72,17 @@ public:
     typedef typename traits::const_type<KeyT>::type             const_key_type;
     typedef typename traits::remove_const<ValueT>::type         value_type;
     typedef typename traits::const_type<ValueT>::type           const_value_type;
-    typedef std::map<KeyT, ValueT>                              record_type;
-    typedef typename std::map<KeyT, ValueT>::iterator           record_iterator;
-    typedef typename std::map<KeyT, ValueT>::const_iterator     const_record_iterator;
-    typedef std::pair<KeyT, ValueT>                             record_pair_type;
+    typedef std::map<KeyT, ValueT>                              node_type;
+    typedef typename std::map<KeyT, ValueT>::iterator           node_iterator;
+    typedef typename std::map<KeyT, ValueT>::const_iterator     const_node_iterator;
+    typedef std::pair<KeyT, ValueT>                             node_pair_type;
 
     static const std::size_t kMaxLevel = MaxLevel;
 
 private:
     std::size_t size_;
     std::size_t capacity_;
-    record_type collect_;
+    node_type nodes_;
 
 public:
     MapCollect() : size_(0), capacity_(0) {}
@@ -91,24 +91,24 @@ public:
     size_t sizes() const { return size_; }
     size_t capacity() const { return capacity_; }
 
-    bool insert(const record_type & record) {
-        record_iterator it = collect_.find(record.key());
-        if (it != collect_.end()) {
-            std::string & value = *(new std::string(record.value().data()));
+    bool insert(const node_type & node) {
+        node_iterator it = nodes_.find(node.key());
+        if (it != nodes_.end()) {
+            std::string & value = *(new std::string(node.value().data()));
             it->second = value;
             return false;
         }
         else {
-            collect_.insert(std::make_pair<KeyT, ValueT>(record.key(), record.value()));
+            nodes_.insert(std::make_pair<KeyT, ValueT>(node.key(), node.value()));
             size_++;
             return true;
         }
     }
 
-    bool remove(const record_type & record) {       
-        record_iterator it = collect_.find(record.key());
-        if (it != collect_.end()) {
-            collect_.erase(it);
+    bool remove(const node_type & node) {       
+        node_iterator it = nodes_.find(node.key());
+        if (it != nodes_.end()) {
+            nodes_.erase(it);
             size_--;
             return true;
         }
@@ -119,6 +119,93 @@ public:
         return false;
     }
 };
+
+template <typename Key, typename Value>
+struct SkipListNode {
+
+    struct SkipListNodeItem {
+        SkipListNode<Key, Value> * next;
+        SkipListNode<Key, Value> * prev;
+    };
+
+    Value *     value;
+    Key *       key;
+    size_t      level;
+    SkipListNodeItem * items[1];
+};
+
+template <typename Key, typename Value, std::size_t MaxLevel>
+class SkipLinkedList {
+public:
+    typedef Key                         key_type;
+    typedef Value                       value_type;
+    typedef SkipListNode<Key, Value>    node_type;
+
+    static const std::size_t max_level = MaxLevel;
+
+    enum {
+        kFoundTheKey,
+        kFoundTheKeyRange,
+        kNotFound
+    };
+
+private:
+    node_type * head_first_;
+    node_type * head_;
+
+public:
+    SkipLinkedList() : head_first_(nullptr), head_(nullptr) {}
+    ~SkipLinkedList() {}
+
+    node_type * find(const key_type & key, int & find_type, unsigned int & out_level) {
+        node_type * node = head_first_;
+        unsigned int level = (unsigned int)max_level - 1;
+        while (node != nullptr) {
+            int cmp_result;
+            key_type cmp_key = node->key;            
+            if (key.size() > cmp_key.size())
+                cmp_result = 1;
+            else if (key.size() > cmp_key.size())
+                cmp_result = -1;
+            else
+                cmp_result = ::memcmp(key.data(), cmp_key.data(), key.size());
+
+            if (cmp_result > 0) {
+                // Is bigger than now node
+            }
+            else if (cmp_result < 0) {
+                // Is smaller than now node
+                node = node->next[0];
+            }
+            else {
+                // Find the key name
+                find_type = kFoundTheKey;
+                return node;
+            }
+            level--;
+        }
+        find_type = kNotFound;
+        return nullptr;
+    }
+
+    bool insert(const key_type & key, const value_type & value) {
+        int find_type;
+        node_type * node = find(key, find_type);
+        if (node != nullptr) {
+            // Update the key
+            return false;
+        }
+        else {
+            // Insert a new key
+            return true;
+        }
+    }
+};
+
+//
+// See: http://dsqiu.iteye.com/blog/1705530 (original version)
+// See: http://www.cppblog.com/mysileng/archive/2013/04/06/199159.html
+//
 
 template <typename T, std::size_t MaxLevel = 10U>
 class SkipList {
@@ -135,6 +222,7 @@ private:
     std::size_t size_;
     std::size_t capacity_;
     std::map<Key, Value> collect_;
+    SkipLinkedList<Key, Value, kMaxLevel> linked_list_[kMaxLevel];
 
 public:
     SkipList() : max_level_(kMaxLevel), size_(0), capacity_(0) {}
@@ -144,10 +232,21 @@ public:
     size_t capacity() const { return capacity_; }
     size_t max_level() const { return max_level_; }
 
-    bool build() {
-        return true;
+    size_t get_random_level() const {
+        size_t rnd_level = get_random_num() % kMaxLevel;
+        return rnd_level;
     }
 
+private:
+    size_t get_random_num() const {
+#if (RAND_MAX == 0x7FFF)
+        size_t rnd = (rand() << 15) | (rand() & 0x7FFFU);
+#else
+        size_t rnd = rand();
+#endif
+    }
+
+public:
     static iterator end_iterator() {
         return reinterpret_cast<iterator>(nullptr);;
     }
@@ -157,10 +256,10 @@ public:
         return it;
     }
 
-    bool insert(const value_type & record) {
-        iterator it = find(record.key());
+    bool insert(const value_type & node) {
+        iterator it = find(node.key());
         if (it != end_iterator()) {
-            std::string & value = *(new std::string(record.value().data()));
+            std::string & value = *(new std::string(node.value().data()));
             // Update the record
             //update(it);
             return false;
@@ -171,8 +270,8 @@ public:
         }
     }
 
-    bool remove(const value_type & record) {       
-        iterator it = find(record.key());
+    bool remove(const value_type & node) {       
+        iterator it = find(node.key());
         if (it != end_iterator()) {
             // Erase the record
             //erase(it);
