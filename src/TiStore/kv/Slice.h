@@ -31,7 +31,9 @@ public:
 
     // Create a single slice from SliceParts using buf as storage.
     // buf must exist as long as the returned Slice exists.
-    Slice(const struct SliceParts & parts, std::string * buf);
+    Slice(const struct SliceParts & parts, std::string * buf) { }
+
+    ~Slice() { }
 
     // Return a pointer to the beginning of the referenced data
     const char * data() const { return data_; }

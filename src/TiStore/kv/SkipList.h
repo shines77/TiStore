@@ -22,7 +22,14 @@ class Key : public Slice {
 public:
     Key() {}
     Key(const char * key) : Slice(key) {}
+    Key(const std::string & key) : Slice(key) {}
     ~Key() {}
+
+    Key & operator = (const Key & rhs) {
+        this->data_ = rhs.data_;
+        this->size_ = rhs.size_;
+        return *this;
+    }
 };
 
 class Value: public Slice {
@@ -39,43 +46,54 @@ public:
     }
 };
 
+template <typename KeyT, typename ValueT>
 class Record {
+public:
+    typedef typename traits::remove_const<KeyT>::type       key_type;
+    typedef typename traits::const_type<KeyT>::type         const_key_type;
+    typedef typename traits::remove_const<ValueT>::type     value_type;
+    typedef typename traits::const_type<ValueT>::type       const_value_type;
+
+private:
+    size_t size_;
+    key_type key_;
+    value_type value_;
+
 public:
     Record() : size_(0) {}
     ~Record() {}
 
-    size_t read(Key & key, Value & value) {
+    size_t read(key_type & key, value_type & value) {
         key = key_;
         value = value_;
         return size_;
     }
 
-    void write(const Key & key, const Value & value) {
+    void write(const key_type & key, const value_type & value) {
         key_ = key;
         value_ = value;
         size_ = 0 + key.size() + value.size();
     }
 
-    Key key() const { return key_; }
-    Value value() const { return value_; }
+    key_type key() const { return key_; }
+    value_type value() const { return value_; }
 
-private:
-    size_t size_;
-    Key key_;
-    Value value_;
+    const key_type const_key() const { return key_; }
+    const value_type const_value() const { return value_; }
 };
 
 template <typename KeyT, typename ValueT>
-class MapCollect {
+class MapSet {
 public:
     typedef typename traits::remove_const<KeyT>::type           key_type;
     typedef typename traits::const_type<KeyT>::type             const_key_type;
     typedef typename traits::remove_const<ValueT>::type         value_type;
     typedef typename traits::const_type<ValueT>::type           const_value_type;
-    typedef std::map<KeyT, ValueT>                              node_type;
-    typedef typename std::map<KeyT, ValueT>::iterator           node_iterator;
-    typedef typename std::map<KeyT, ValueT>::const_iterator     const_node_iterator;
-    typedef std::pair<KeyT, ValueT>                             node_pair_type;
+
+    typedef std::map<key_type, value_type>                      node_type;
+    typedef typename std::map<key_type, value_type>::iterator   node_iterator;
+    typedef typename std::map<key_type, value_type>::const_iterator const_node_iterator;
+    typedef std::pair<key_type, value_type>                     node_pair_type;
 
     static const std::size_t kMaxLevel = MaxLevel;
 
@@ -85,8 +103,8 @@ private:
     node_type nodes_;
 
 public:
-    MapCollect() : size_(0), capacity_(0) {}
-    ~MapCollect() {}
+    MapSet() : size_(0), capacity_(0) {}
+    ~MapSet() {}
 
     size_t sizes() const { return size_; }
     size_t capacity() const { return capacity_; }
@@ -99,7 +117,7 @@ public:
             return false;
         }
         else {
-            nodes_.insert(std::make_pair<KeyT, ValueT>(node.key(), node.value()));
+            nodes_.insert(std::make_pair<key_type, value_type>(node.key(), node.value()));
             size_++;
             return true;
         }
@@ -122,6 +140,9 @@ public:
 
 template <typename Key, typename Value>
 struct SkipListNode {
+    typedef SkipListNode<Key, Value>    node_type;
+    typedef typename node_type *        iterator;
+    typedef typename const node_type *  const_iterator;
 
     struct SkipListNodeItem {
         SkipListNode<Key, Value> * next;
@@ -134,20 +155,17 @@ struct SkipListNode {
     SkipListNodeItem * items[1];
 };
 
-template <typename Key, typename Value, std::size_t MaxLevel>
+template <typename Key, typename Value, size_t MaxLevel>
 class SkipLinkedList {
 public:
-    typedef Key                         key_type;
-    typedef Value                       value_type;
-    typedef SkipListNode<Key, Value>    node_type;
+    typedef Key     key_type;
+    typedef Value   value_type;
+
+    typedef SkipListNode<Key, Value>            node_type;
+    typedef typename node_type::iterator        iteration;
+    typedef typename node_type::const_iterator  const_iterator;
 
     static const std::size_t max_level = MaxLevel;
-
-    enum {
-        kFoundTheKey,
-        kFoundTheKeyRange,
-        kNotFound
-    };
 
 private:
     node_type * head_first_;
@@ -207,34 +225,63 @@ public:
 // See: http://www.cppblog.com/mysileng/archive/2013/04/06/199159.html
 //
 
-template <typename T, std::size_t MaxLevel = 10U>
+template <typename KeyT, typename ValueT, size_t MaxLevel = 10U>
 class SkipList {
 public:
-    typedef typename traits::remove_const<T>::type  value_type;
-    typedef typename traits::const_type<T>::type    const_value_type;
-    typedef value_type *                            iterator;
-    typedef const_value_type *                      const_iterator;
+    typedef typename traits::remove_const<KeyT>::type       key_type;
+    typedef typename traits::const_type<KeyT>::type         const_key_type;
+    typedef typename traits::remove_const<ValueT>::type     value_type;
+    typedef typename traits::const_type<ValueT>::type       const_value_type;
 
-    static const std::size_t kMaxLevel = MaxLevel;
+    typedef SkipList<KeyT, ValueT, MaxLevel>        this_type;
+    typedef SkipListNode<key_type, value_type>      node_type;
+    typedef typename node_type::iterator            node_iterator;
+    typedef typename node_type::const_iterator      const_node_iterator;
+    typedef std::pair<key_type, value_type>         node_pair_type;
+
+    typedef node_type *                             iterator;
+    typedef const node_type *                       const_iterator;
+
+    static const size_t kMaxLevel = MaxLevel;
+    static const size_t kMaxKeySize = 1024;
+    // Notes: kSeparateSize must be multiply of 16.
+    static const size_t kSeparateSize = 128;
+    static const size_t kAdditiveIndex = (kSeparateSize / 16) - (kSeparateSize / 32);
+    static const size_t kMaxKeyIndex = (kMaxKeySize / 32) + kAdditiveIndex + 1;
+
+    enum {
+        kFoundTheKey,
+        kFoundInsertNode,
+        kNotFound
+    };
 
 private:
     std::size_t max_level_;
     std::size_t size_;
     std::size_t capacity_;
-    std::map<Key, Value> collect_;
-    SkipLinkedList<Key, Value, kMaxLevel> linked_list_[kMaxLevel];
+    node_type * head_[kMaxKeyIndex][kMaxLevel];
+    SkipLinkedList<key_type, value_type, kMaxLevel> linked_list_;
 
 public:
-    SkipList() : max_level_(kMaxLevel), size_(0), capacity_(0) {}
+    SkipList() : max_level_(kMaxLevel), size_(0), capacity_(0) {
+        init();
+    }
     ~SkipList() {}
 
     size_t sizes() const { return size_; }
     size_t capacity() const { return capacity_; }
     size_t max_level() const { return max_level_; }
 
-    size_t get_random_level() const {
-        size_t rnd_level = get_random_num() % kMaxLevel;
-        return rnd_level;
+    constexpr node_type * null_node() const {
+        return nullptr;
+    }
+
+    constexpr iterator null_iterator() const {
+        return nullptr;
+    }
+
+    constexpr iterator end_iterator() const {
+        return null_iterator();
     }
 
 private:
@@ -246,43 +293,158 @@ private:
 #endif
     }
 
+    size_t get_length_index(size_t length) const {
+        if (length < kSeparateSize)
+            return (length / 16);   // If length < 128, interval is small.
+        else {
+            if (length < kMaxKeySize)
+                return (length / 32) + kAdditiveIndex;
+            else
+                return (kMaxKeySize / 32) + kAdditiveIndex;     // If length >= 1024, then index = 36.
+        }
+    }
+
+    void init() {
+        for (int i = 0; i < kMaxKeyIndex; i++) {
+            for (int j = 0; j < kMaxLevel; j++) {
+                head_[i][j] = nullptr;
+            }
+        }
+    }
+
+    bool insert_by_iter(iterator iter, const key_type & key, const value_type & value) {
+        //
+        size_++;
+        return true;
+    }
+
 public:
-    static iterator end_iterator() {
-        return reinterpret_cast<iterator>(nullptr);;
+    size_t get_random_level() const {
+        size_t rnd_level = get_random_num() % kMaxLevel;
+        return rnd_level;
     }
 
-    iterator find(const Key & key) {
-        iterator it = end_iterator();
-        return it;
+    iterator find(const key_type & key, int & find_type, int & out_level) {
+        iterator iter = end_iterator();
+
+        int level = 0;
+        node_type * node = nullptr;
+        size_t key_size = key.size();
+        int key_index = get_length_index(key_size);
+        node_type * head_base = head_[key_index][0];
+        // Find the first validate linkedlist.
+        while (level < kMaxLevel) {
+            node = head_base[level];
+            if (node != nullptr)
+                break;
+            level++;
+        }
+        bool is_first_node = true;
+        while (node != nullptr) {
+            int cmp_result;
+            key_type * cmp_key = node->key;
+            size_t cmp_size = cmp_key->size();
+            size_t min_size = (key_size >= cmp_size) ? key_size : cmp_size;
+            cmp_result = ::memcmp(key.data(), cmp_key->data(), min_size);
+            if (cmp_result == 0) {
+                if (key.size() > cmp_key->size())
+                    cmp_result = +1;
+                else if (key.size() > cmp_key->size())
+                    cmp_result = -1
+            }
+            if (cmp_result > 0) {
+                // Is bigger than now node
+                node = node->items[0]->prev;
+            }
+            else if (cmp_result < 0) {
+                // Is smaller than now node
+                if (!is_first_node) {
+                    node = node->items[0]->next;
+                }
+                else {
+                    // It's smaller than first node in linkedlist.
+                    goto NotFoundKey;
+                }
+            }
+            else {
+                // Find the key name
+                find_type = kFoundTheKey;
+                return node;
+            }
+            level++;
+            if (level >= max_level_) {
+                //
+                return iter;
+            }
+        }
+NotFoundKey:
+        find_type = kNotFound;
+        return null_iterator();
     }
 
-    bool insert(const value_type & node) {
-        iterator it = find(node.key());
-        if (it != end_iterator()) {
-            std::string & value = *(new std::string(node.value().data()));
+    void update(iterator iter, std::string && value) {
+        std::string * new_str = new std::string(value);
+        value_type * new_value = new value_type(new_str);
+        iter->value = new_value;
+    }
+
+    void update(iterator iter, const value_type & value) {
+        assert(iter != nullptr);
+        value_type * new_value = new value_type(value);
+        iter->value = new_value;
+    }
+
+    bool insert(const key_type & key, const value_type & value) {
+        int find_type = kNotFound, out_level = -1;
+        iterator iter = find(key, find_type, out_level);
+        if (iter != end_iterator()) {
             // Update the record
-            //update(it);
+            update(iter, value);
             return false;
         }
         else {
-            size_++;
+            // Insert the record
+            insert_by_iter(iter, key, value);
             return true;
         }
     }
+    
+    template <typename U>
+    bool insert(U && record) {
+        return insert(record.key(), record.value());
+    }
 
-    bool remove(const value_type & node) {       
-        iterator it = find(node.key());
-        if (it != end_iterator()) {
+    bool insert(const node_type & node) {
+        return insert(node.key(), node.value());
+    }
+
+    bool remove(const key_type & key) {
+        int find_type = kNotFound, out_level = -1;
+        iterator iter = find(key, find_type, out_level);
+        if (iter != end_iterator()) {
             // Erase the record
-            //erase(it);
+            //erase(iter);
             size_--;
             return true;
         }
         return false;
     }
 
+    bool remove(key_type && key) {
+        return remove(key);
+    }
+
     bool remove(const char * key) {
         return false;
+    }
+
+    template <typename U>
+    bool remove_by_record(U && record) {
+        return remove(record.const_key());
+    }
+
+    bool remove(const node_type & node) {
+        return remove(node.key());
     }
 };
 

@@ -247,15 +247,15 @@ void test_traist()
 
 void test_skiplist()
 {
-    SkipList<Record, 16> skiplist;
-    Record record;
+    SkipList<Key, Value, 16> skiplist;
+    Record<Key, Value> record;
 
     record.write(Key("/home/skyinno"), Value("TiStore.SkipList.Record"));
     skiplist.insert(record);
 
     printf("skiplist.size() = %zu\n", skiplist.sizes());
 
-    skiplist.remove(record);
+    skiplist.remove_by_record(record);
     //skiplist.remove(record.key().data());
     printf("skiplist.size() = %zu\n", skiplist.sizes());
 
