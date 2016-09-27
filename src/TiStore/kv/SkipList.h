@@ -189,14 +189,14 @@ public:
                 cmp_result = ::memcmp(key.data(), cmp_key.data(), key.size());
 
             if (cmp_result > 0) {
-                // Is bigger than now node
+                // Bigger than current node
             }
             else if (cmp_result < 0) {
-                // Is smaller than now node
+                // Smaller than current node
                 node = node->next[0];
             }
             else {
-                // Find the key name
+                // Have found the key name
                 find_type = kFoundTheKey;
                 return node;
             }
@@ -259,7 +259,7 @@ private:
     std::size_t max_level_;
     std::size_t size_;
     std::size_t capacity_;
-    node_type * head_[kMaxKeyIndex][kMaxLevel];
+    node_type * head_[kMaxKeyIndex + 1][kMaxLevel];
     SkipLinkedList<key_type, value_type, kMaxLevel> linked_list_;
 
 public:
@@ -331,12 +331,15 @@ public:
         node_type * node = nullptr;
         size_t key_size = key.size();
         int key_index = get_length_index(key_size);
-        node_type * head_base = head_[key_index][0];
+        assert(key_index <= kMaxKeyIndex);
+        // Get the first node of the specified level by key_index.
+        node_type * head_base = head_[key_index][level];
         // Find the first validate linkedlist.
         while (level < kMaxLevel) {
-            node = head_base[level];
+            node = head_base;
             if (node != nullptr)
                 break;
+            head_base++;
             level++;
         }
         bool is_first_node = true;
@@ -350,14 +353,14 @@ public:
                 if (key.size() > cmp_key->size())
                     cmp_result = +1;
                 else if (key.size() > cmp_key->size())
-                    cmp_result = -1
+                    cmp_result = -1;
             }
             if (cmp_result > 0) {
-                // Is bigger than now node
+                // Bigger than current node
                 node = node->items[0]->prev;
             }
             else if (cmp_result < 0) {
-                // Is smaller than now node
+                // Smaller than current node
                 if (!is_first_node) {
                     node = node->items[0]->next;
                 }
@@ -367,7 +370,7 @@ public:
                 }
             }
             else {
-                // Find the key name
+                // Have found the key name
                 find_type = kFoundTheKey;
                 return node;
             }
