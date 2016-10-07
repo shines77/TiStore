@@ -228,19 +228,24 @@ public:
 template <typename KeyT, typename ValueT, size_t MaxLevel = 10U>
 class SkipList {
 public:
+    class Node;
+    class iterator;
     typedef typename traits::remove_const<KeyT>::type       key_type;
     typedef typename traits::const_type<KeyT>::type         const_key_type;
     typedef typename traits::remove_const<ValueT>::type     value_type;
     typedef typename traits::const_type<ValueT>::type       const_value_type;
 
     typedef SkipList<KeyT, ValueT, MaxLevel>        this_type;
-    typedef SkipListNode<key_type, value_type>      node_type;
-    typedef typename node_type::iterator            node_iterator;
-    typedef typename node_type::const_iterator      const_node_iterator;
+    //typedef SkipListNode<key_type, value_type>      node_type;
+    typedef Node                                    node_type;
+    //typedef typename node_type::iterator            node_iterator;
+    //typedef typename node_type::const_iterator      const_node_iterator;
     typedef std::pair<key_type, value_type>         node_pair_type;
 
-    typedef node_type *                             iterator;
-    typedef const node_type *                       const_iterator;
+    //typedef node_type *                             iterator;
+    //typedef const node_type *                       const_iterator;
+    typedef const iterator                          const_iterator;
+    typedef std::nullptr_t                          end_iterator_t;
 
     static const size_t kMaxLevel = MaxLevel;
     static const size_t kMaxKeySize = 1024;
@@ -255,12 +260,154 @@ public:
         kNotFound
     };
 
+public:
+    class Node {
+    public:
+        Node * next;
+        Node * prev;
+        key_type * key;
+        value_type * value;
+    private:
+        Node * next_[1];
+
+    public:
+        explicit Node(const key_type & k, const value_type & v)
+            : key(&k), value(&v) { }
+        ~Node() { }
+
+        Node * getNext(int n) {
+            assert(n >= 0);
+            return next_[n];
+        }
+
+        void setNext(int n, Node * node) {
+            assert(n >= 0);
+            next_[n] = node;
+        }
+    };
+
 private:
     std::size_t max_level_;
     std::size_t size_;
     std::size_t capacity_;
     node_type * head_[kMaxKeyIndex + 1][kMaxLevel];
     SkipLinkedList<key_type, value_type, kMaxLevel> linked_list_;
+
+public:
+    // Iteration over the contents of a skip list
+    class iterator {
+    public:
+        // Initialize an iterator over the specified list.
+        // The returned iterator is not valid.
+        explicit iterator(const SkipList * list) : list_(list), node_(nullptr) { }
+
+        // Init the iterator
+        void init(const SkipList * list, node_type * node) {
+            list_ = list;
+            node_ = node;
+        }
+
+        // Change the underlying skiplist used for this iterator
+        // This enables us not changing the iterator without deallocating
+        // an old one and then allocating a new one
+        void setList(const SkipList * list) {
+            list_ = list;
+            node_ = nullptr;
+        }
+
+        // Returns true iff the iterator is positioned at a valid node.
+        bool is_valid() const { return (node_ != nullptr); }
+
+        // Returns the key at the current position.
+        // REQUIRES: is_valid()
+        const key_type & key() const { return node_->key; }
+
+        node_type & node() const { return (*node_); }
+
+        // Advances to the next position.
+        // REQUIRES: is_valid()
+        void next() { }
+
+        // Advances to the previous position.
+        // REQUIRES: is_valid()
+        void prev() { }
+
+        // Advance to the first entry with a key >= target
+        void seek(const key_type & target) { }
+
+        // Position at the first entry in list.
+        // Final state of iterator is is_valid() if list is not empty.
+        void seek_to_first() { }
+
+        // Position at the last entry in list.
+        // Final state of iterator is is_valid() if list is not empty.
+        void seek_to_last() { }
+
+        node_type & operator * () const {
+            return (node_type &)(*node_);
+        }
+
+        node_type * operator -> () const {
+            return node_;
+        }
+
+        // preincrement: ++i;
+        iterator & operator ++()
+        {
+            ++*(iterator *)this;
+            return (*this);
+        }
+
+        // postincrement: i++;
+        iterator operator ++(int)
+        {
+            iterator tmp = *this;
+            ++*this;
+            return (tmp);
+        }
+
+        // predecrement: --i;
+        iterator & operator --()
+        {
+            --*(iterator *)this;
+            return (*this);
+        }
+
+        // postdecrement: i--;
+        iterator operator --(int)
+        {
+            iterator tmp = *this;
+            --*this;
+            return (tmp);
+        }
+
+        bool operator == (node_type * node) {
+            return (node_ == node);
+        }
+
+        bool operator != (node_type * node) {
+            return (node_ != node);
+        }
+
+        bool operator > (node_type * node) {
+            return (node_ > node);
+        }
+
+        bool operator < (node_type * node) {
+            return (node_ < node);
+        }
+
+        iterator & operator = (const iterator & iter) {
+            if ((iterator *)&iter != this)
+                init(iter->list_, iter->node_);
+            return (*this);
+        }
+
+    private:
+        const SkipList * list_;
+        node_type * node_;
+        // Intentionally copyable
+    };
 
 public:
     SkipList() : max_level_(kMaxLevel), size_(0), capacity_(0) {
@@ -272,16 +419,16 @@ public:
     size_t capacity() const { return capacity_; }
     size_t max_level() const { return max_level_; }
 
-    constexpr node_type * null_node() const {
-        return nullptr;
+    bool is_valid() const {
+        return true;
     }
 
-    constexpr iterator null_iterator() const {
-        return nullptr;
+    node_type * begin() const {
+        return nullptr();
     }
 
-    constexpr iterator end_iterator() const {
-        return null_iterator();
+    node_type * end() const {
+        return nullptr();
     }
 
 private:
@@ -293,14 +440,14 @@ private:
 #endif
     }
 
-    size_t get_length_index(size_t length) const {
+    int get_length_index(size_t length) const {
         if (length < kSeparateSize)
-            return (length / 16);   // If length < 128, interval is small.
+            return (int)(length / 16);   // If length < 128, interval is small.
         else {
             if (length < kMaxKeySize)
-                return (length / 32) + kAdditiveIndex;
+                return (int)((length / 32) + kAdditiveIndex);
             else
-                return (kMaxKeySize / 32) + kAdditiveIndex;     // If length >= 1024, then index = 36.
+                return (int)((kMaxKeySize / 32) + kAdditiveIndex);     // If length >= 1024, then index = 36.
         }
     }
 
@@ -324,19 +471,27 @@ public:
         return rnd_level;
     }
 
-    iterator find(const key_type & key, int & find_type, int & out_level) {
-        iterator iter = end_iterator();
+    void prev(int i) {
+        //
+    }
 
-        int level = 0;
-        node_type * node = nullptr;
+    void next(int i) {
+        //
+    }
+
+    iterator find(const key_type & key, int & find_type, int & out_level) {
+        iterator iter(this);
+
+        node_type * node;
         size_t key_size = key.size();
         int key_index = get_length_index(key_size);
         assert(key_index <= kMaxKeyIndex);
         // Get the first node of the specified level by key_index.
-        node_type * head_base = head_[key_index][level];
+        node_type ** head_base = &head_[key_index][0];
+        int level = 0;
         // Find the first validate linkedlist.
         while (level < kMaxLevel) {
-            node = head_base;
+            node = *head_base;
             if (node != nullptr)
                 break;
             head_base++;
@@ -357,12 +512,12 @@ public:
             }
             if (cmp_result > 0) {
                 // Bigger than current node
-                node = node->items[0]->prev;
+                node = node->getNext(0)->prev;
             }
             else if (cmp_result < 0) {
                 // Smaller than current node
                 if (!is_first_node) {
-                    node = node->items[0]->next;
+                    node = node->getNext(0)->next;
                 }
                 else {
                     // It's smaller than first node in linkedlist.
@@ -372,7 +527,7 @@ public:
             else {
                 // Have found the key name
                 find_type = kFoundTheKey;
-                return node;
+                return iter;
             }
             level++;
             if (level >= max_level_) {
@@ -382,25 +537,25 @@ public:
         }
 NotFoundKey:
         find_type = kNotFound;
-        return null_iterator();
+        return iter;
     }
 
-    void update(iterator iter, std::string && value) {
+    void update(iterator & iter, std::string && value) {
         std::string * new_str = new std::string(value);
         value_type * new_value = new value_type(new_str);
-        iter->value = new_value;
+        iter.node().value = new_value;
     }
 
-    void update(iterator iter, const value_type & value) {
+    void update(iterator & iter, const value_type & value) {
         assert(iter != nullptr);
         value_type * new_value = new value_type(value);
-        iter->value = new_value;
+        iter.node().value = new_value;
     }
 
     bool insert(const key_type & key, const value_type & value) {
         int find_type = kNotFound, out_level = -1;
         iterator iter = find(key, find_type, out_level);
-        if (iter != end_iterator()) {
+        if (iter != nullptr) {
             // Update the record
             update(iter, value);
             return false;
@@ -424,7 +579,7 @@ NotFoundKey:
     bool remove(const key_type & key) {
         int find_type = kNotFound, out_level = -1;
         iterator iter = find(key, find_type, out_level);
-        if (iter != end_iterator()) {
+        if (iter != nullptr) {
             // Erase the record
             //erase(iter);
             size_--;
@@ -450,5 +605,15 @@ NotFoundKey:
         return remove(node.key());
     }
 };
+
+template <typename KeyT, typename ValueT, size_t MaxLevel>
+inline bool operator == (const typename SkipList<KeyT, ValueT, MaxLevel>::iterator & iter, const std::nullptr_t & null_ptr) {
+    return (iter.node_ == null_ptr);
+}
+
+template <typename KeyT, typename ValueT, size_t MaxLevel>
+inline bool operator != (const typename SkipList<KeyT, ValueT, MaxLevel>::iterator & iter, const std::nullptr_t & null_ptr) {
+    return (iter.node_ != null_ptr);
+}
 
 } // namespace TiStore

@@ -14,6 +14,7 @@
 #include <iostream>
 #include <type_traits>
 #include <typeinfo>
+#include <vector>
 
 using namespace TiStore;
 
@@ -259,5 +260,17 @@ void test_skiplist()
     //skiplist.remove(record.key().data());
     printf("skiplist.size() = %zu\n", skiplist.sizes());
 
+    printf("\n");
+}
+
+void test_stl_iterator()
+{
+    std::vector<int> vec = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    std::vector<int>::iterator iter;
+    int i;
+    for (i = 0, iter = vec.begin(); iter != vec.end(); ++iter) {
+        printf("vec[%d]: %d\n", i, *iter);
+        i++;
+    }
     printf("\n");
 }
