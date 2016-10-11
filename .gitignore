@@ -95,6 +95,9 @@ Icon?
 # Ignore Sublime Text 2 dump files
 *.dump
 
+# Ignore CLion or Intellij Idea settings files
+.idea
+
 # Ignore Eclipse or VSCode settings files
 .settings
 

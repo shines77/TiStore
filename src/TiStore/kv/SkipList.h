@@ -309,8 +309,8 @@ public:
 
         // Change the underlying skiplist used for this iterator
         // This enables us not changing the iterator without deallocating
-        // an old one and then allocating a new one
-        void setList(const SkipList * list) {
+        // an old one and then allocating a new one.
+        void set_list(const SkipList * list) {
             list_ = list;
             node_ = nullptr;
         }
@@ -352,14 +352,14 @@ public:
         }
 
         // preincrement: ++i;
-        iterator & operator ++()
+        iterator & operator ++ ()
         {
             ++*(iterator *)this;
             return (*this);
         }
 
         // postincrement: i++;
-        iterator operator ++(int)
+        iterator operator ++ (int)
         {
             iterator tmp = *this;
             ++*this;
@@ -367,14 +367,14 @@ public:
         }
 
         // predecrement: --i;
-        iterator & operator --()
+        iterator & operator -- ()
         {
             --*(iterator *)this;
             return (*this);
         }
 
         // postdecrement: i--;
-        iterator operator --(int)
+        iterator operator -- (int)
         {
             iterator tmp = *this;
             --*this;
