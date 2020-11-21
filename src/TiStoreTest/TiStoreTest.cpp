@@ -294,11 +294,11 @@ int main(int argc, char * argv[])
 
     test_skiplist();
     test_property();
-    //test_traist();
+    test_traist();
     test_stl_iterator();
 
-    //test_bloomfilter();
-    //test_typeinfo_module();
+    test_bloomfilter();
+    test_typeinfo_module();
 
     //printf("\n");
 
